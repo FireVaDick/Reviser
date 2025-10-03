@@ -93,8 +93,33 @@ namespace Reviser
 
 
 
-        #region Загрузка таблицы
+        #region Главные методы
         private void ChooseImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            GetImageDirectory();
+        }
+
+        private async void LoadFullTable_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            await LoadTable(true);
+        }
+
+        private async void LoadShortTable_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            await LoadTable(false);
+        }
+
+        private void Cancel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            cancellationTokenSource?.Cancel();
+        }
+
+        #endregion
+
+
+
+        #region Реализация главных методов
+        private void GetImageDirectory()
         {
             OpenFileDialog fileDialog = new OpenFileDialog();
             bool? success = fileDialog.ShowDialog();
@@ -108,7 +133,7 @@ namespace Reviser
             SelectedFolder.Text = directoryPath;
         }
 
-        private async void LoadTable_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private async Task LoadTable(bool isFullLoad)
         {
             if (string.IsNullOrEmpty(directoryPath))
             {
@@ -121,14 +146,13 @@ namespace Reviser
             var cancellationToken = cancellationTokenSource.Token;
 
             // Показываем кнопку отмены
+            LoadFullTable.IsEnabled = false;
+
             Cancel.Visibility = Visibility.Visible;
-            LoadTable.IsEnabled = false;
 
             try
             {
-                string[] filters = new string[] { "jpg", "jpeg", "png", "gif" };
-
-                await LoadImagesAsync(directoryPath, filters, false, cancellationToken);
+                await LoadImagesAsync(directoryPath, isFullLoad, false, cancellationToken);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -145,20 +169,17 @@ namespace Reviser
             finally
             {
                 // Восстанавливаем UI
+                LoadFullTable.IsEnabled = true;
                 Cancel.Visibility = Visibility.Collapsed;
-                LoadTable.IsEnabled = true;
+
                 cancellationTokenSource?.Dispose();
                 cancellationTokenSource = null;
             }
         }
 
-        private void Cancel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private async Task LoadImagesAsync(string searchFolder, bool isFullLoad, bool isRecursive, CancellationToken cancellationToken)
         {
-            cancellationTokenSource?.Cancel();
-        }
-
-        private async Task LoadImagesAsync(string searchFolder, string[] filters, bool isRecursive, CancellationToken cancellationToken)
-        {
+            string[] filters = new string[] { "jpg", "jpeg", "png", "gif" };
             var filePaths = new List<string>();
             var searchOption = isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
@@ -176,7 +197,7 @@ namespace Reviser
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var path = filePaths[i];
-                var item = await Task.Run(() => SetImageInfo(path, i + 1, cancellationToken), cancellationToken);
+                var item = await Task.Run(() => SetImageInfo(path, i + 1, isFullLoad, cancellationToken), cancellationToken);
 
                 // Обновляем UI в основном потоке
                 await Dispatcher.InvokeAsync(() =>
@@ -186,11 +207,11 @@ namespace Reviser
                 });
 
                 // Небольшая пауза для плавности с проверкой отмены
-                await Task.Delay(10, cancellationToken);
+                //await Task.Delay(10, cancellationToken);
             }
         }
 
-        private ImageInfoItem SetImageInfo(string fullPath, int index, CancellationToken cancellationToken)
+        private ImageInfoItem SetImageInfo(string fullPath, int index, bool isFullLoad, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -210,7 +231,7 @@ namespace Reviser
                     return new ImageInfoItem
                     {
                         Index = index,
-                        FileName = fileName, //currentPath.Replace(directoryPath + "\\", "");
+                        FileName = fileName,
                         Resolution = $"{width}x{height}",
                         AspectRatio = (height / (double)width).ToString("F3"),
                         FileSize = FormatFileSize(fileInfo.Length),

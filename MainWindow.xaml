@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Reviser"
         mc:Ignorable="d"
         Title="Главное меню"
-        Width="1500" Height="800"
+        Width="1550" Height="800"
         MinWidth="1220" MinHeight="500"
         d:DesignWidth="1220" d:DesignHeight="500"
         FontFamily="v_DistrictTF-Regular" FontSize="16"
@@ -84,11 +84,11 @@
                               Command="Выбрать файл"
                               MouseLeftButtonDown="ChooseImage_MouseLeftButtonDown" />
 
-            <local:Controller x:Name="LoadTable"
+            <local:Controller x:Name="LoadFullTable"
                               GlobalWidth="160" FigureWidth="150"
                               Purpose="Action"                      
                               Command="Загрузить таблицу"
-                              MouseLeftButtonDown="LoadTable_MouseLeftButtonDown" />
+                              MouseLeftButtonDown="LoadFullTable_MouseLeftButtonDown" />
 
             <local:Controller x:Name="GetNoAuthor"
                               GlobalWidth="115" FigureWidth="105"
@@ -330,8 +330,8 @@
 
         <!--Внизу-->
         <TextBlock Name="Count" 
-                   Grid.Row="3" 
-                   Margin="25,0,0,10"
+                   Grid.Row="3" Grid.Column="1"
+                   Margin="0,0,0,10"
                    Width="150" Height="24"  
                    HorizontalAlignment="Left"
                    TextAlignment="Left" />
