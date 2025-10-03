@@ -37,7 +37,15 @@
                   VerticalAlignment="Stretch"
                   VirtualizingStackPanel.IsVirtualizing="False"
                   FontSize="16"
-                  FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular">
+                  FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"
+                  MouseDoubleClick="ImageGrid_MouseDoubleClick">
+            <DataGrid.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
+                                 Color="#568CF7"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
+                                 Color="#90B1F3"/>
+            </DataGrid.Resources>
+
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Index}" 
                                     Header="Ном." 
@@ -46,8 +54,26 @@
                                     Header="Имя"
                                     Width="*"/>
                 <DataGridTextColumn Binding="{Binding Resolution}"
-                                    Header="Разреш."
+                                    Header="Разрешен."
                                     Width="100"/>
+
+                <DataGridTemplateColumn Header="" Width="30" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <!-- Минималистичный индикатор -->
+                            <Border Width="20" Height="20" 
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                                <Border Background="#1c2541" 
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Width="{Binding IndicatorWidth}"
+                                        Height="{Binding IndicatorHeight}"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
                 <DataGridTextColumn Binding="{Binding AspectRatio}"
                                     Header="Соотнош." 
                                     Width="90"/>
@@ -63,10 +89,10 @@
                 <Style TargetType="DataGridRow">
                     <Setter Property="Background" Value="#e9ebf5"/>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding RowColor}" Value="#000">
+                        <DataTrigger Binding="{Binding BackColor}" Value="#000">
                             <Setter Property="Background" Value="#a2d2ff"/>
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding RowColor}" Value="#001">
+                        <DataTrigger Binding="{Binding BackColor}" Value="#001">
                             <Setter Property="Background" Value="#ffafcc"/>
                         </DataTrigger>
                     </Style.Triggers>
@@ -149,7 +175,14 @@
                       VerticalAlignment="Stretch"
                       VirtualizingStackPanel.IsVirtualizing="False"
                       FontSize="16"
-                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular">
+                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular" >
+                <DataGrid.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
+                                     Color="#568CF7"/>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
+                                     Color="#90B1F3"/>
+                </DataGrid.Resources>
+                
                 <DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding Index}" 
                                         Header="Ном." 
@@ -166,10 +199,10 @@
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" Value="#e9ebf5"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding RowColor}" Value="#000">
+                            <DataTrigger Binding="{Binding BackColor}" Value="#000">
                                 <Setter Property="Background" Value="#a2d2ff"/>
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding RowColor}" Value="#001">
+                            <DataTrigger Binding="{Binding BackColor}" Value="#001">
                                 <Setter Property="Background" Value="#ffafcc"/>
                             </DataTrigger>
                         </Style.Triggers>
@@ -279,7 +312,14 @@
                       VerticalAlignment="Stretch"
                       VirtualizingStackPanel.IsVirtualizing="False"
                       FontSize="16"
-                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular">
+                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular" >
+                <DataGrid.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
+                                     Color="#568CF7"/>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
+                                     Color="#90B1F3"/>
+                </DataGrid.Resources>
+                
                 <DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding Index}" 
                             Header="Ном." 
@@ -296,10 +336,10 @@
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" Value="#e9ebf5"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding RowColor}" Value="#000">
+                            <DataTrigger Binding="{Binding BackColor}" Value="#000">
                                 <Setter Property="Background" Value="#a2d2ff"/>
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding RowColor}" Value="#001">
+                            <DataTrigger Binding="{Binding BackColor}" Value="#001">
                                 <Setter Property="Background" Value="#ffafcc"/>
                             </DataTrigger>
                         </Style.Triggers>
@@ -330,8 +370,8 @@
 
         <!--Внизу-->
         <TextBlock Name="Count" 
-                   Grid.Row="3" Grid.Column="1"
-                   Margin="0,0,0,10"
+                   Grid.Row="3"
+                   Margin="25,0,0,10"
                    Width="150" Height="24"  
                    HorizontalAlignment="Left"
                    TextAlignment="Left" />

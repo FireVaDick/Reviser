@@ -27,7 +27,7 @@ namespace Reviser
 
         public ImageParsedName Parsed { get; set; }
 
-        public string RowColor
+        public string BackColor
         {
             get
             {

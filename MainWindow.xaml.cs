@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -12,6 +13,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
+
 namespace Reviser
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
@@ -104,16 +107,10 @@ namespace Reviser
             await LoadTable(true);
         }
 
-        private async void LoadShortTable_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            await LoadTable(false);
-        }
-
         private void Cancel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             cancellationTokenSource?.Cancel();
         }
-
         #endregion
 
 
@@ -470,5 +467,68 @@ namespace Reviser
         }
         #endregion
 
+
+
+        #region Обработка правого клика и контекстного меню
+        private void ImageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var hitTestResult = VisualTreeHelper.HitTest(ImageGrid, e.GetPosition(ImageGrid));
+            var row = hitTestResult.VisualHit.GetParentOfType<System.Windows.Controls.DataGridRow>();
+
+            OpenImageFromGrid(row, ImageGrid);
+        }
+
+        private void OpenImageFromGrid(System.Windows.Controls.DataGridRow row, System.Windows.Controls.DataGrid grid)
+        {
+            if (row != null)
+            {
+                // Выделяем строку, по которой кликнули
+                row.IsSelected = true;
+            }
+
+            var selectedItem = grid.SelectedItem as ImageInfoItem;
+            if (selectedItem != null && !string.IsNullOrEmpty(directoryPath))
+            {
+                try
+                {
+                    string fullPath = Path.Combine(directoryPath, selectedItem.FileName);
+                    if (File.Exists(fullPath))
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = fullPath,
+                            UseShellExecute = true
+                        });
+                    }
+                    else
+                    {
+                        MessageBox.Show("Файл не найден", "Ошибка",
+                                      MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при открытии файла: {ex.Message}", "Ошибка",
+                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        #endregion
+    }
+
+    public static class VisualTreeHelperExtensions
+    {
+        public static T GetParentOfType<T>(this DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parent = VisualTreeHelper.GetParent(child);
+
+            if (parent == null)
+                return null;
+
+            if (parent is T parentTyped)
+                return parentTyped;
+
+            return parent.GetParentOfType<T>();
+        }
     }
 }

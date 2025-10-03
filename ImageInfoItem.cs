@@ -1,4 +1,6 @@
-﻿namespace Reviser
+﻿using System;
+
+namespace Reviser
 {
     public class ImageInfoItem
     {
@@ -10,7 +12,7 @@
         public string FileSize { get; set; }
         public string Format { get; set; }
 
-        public string RowColor
+        public string BackColor
         {
             get
             {
@@ -18,6 +20,31 @@
                 if (name.Contains(" ecchi ")) return "#000";
                 if (name.Contains(" porn ")) return "#001";  
                 return null;
+            }
+        }
+        public double IndicatorWidth
+        {
+            get
+            {
+                double ratio = Convert.ToDouble(AspectRatio);
+                double maxWidth = 16; 
+
+                if (ratio >= 1.0) 
+                    return maxWidth;
+                else return maxWidth * ratio;
+            }
+        }
+
+        public double IndicatorHeight
+        {
+            get
+            {
+                double ratio = Convert.ToDouble(AspectRatio);
+                double maxHeight = 16; 
+
+                if (ratio <= 1.0) 
+                    return maxHeight;
+                else return maxHeight / ratio;
             }
         }
         #endregion
