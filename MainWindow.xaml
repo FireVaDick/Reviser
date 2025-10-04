@@ -10,7 +10,8 @@
         MinWidth="1220" MinHeight="500"
         d:DesignWidth="1220" d:DesignHeight="500"
         FontFamily="v_DistrictTF-Regular" FontSize="16"
-        Background="#dddfe9">
+        Background="#dddfe9"
+        KeyDown="MainWindow_KeyDown">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -18,14 +19,86 @@
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="2*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--Столбик 1-->
+
+
+        <!--Столбик Image-->
+        <Border Grid.Row="0" Grid.Column="0"
+                Margin="15,15,0,10"
+                Background="#fff"
+                BorderBrush="#1c2541"
+                BorderThickness="1.8"
+                CornerRadius="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Заголовок -->
+                <TextBlock Text="Превью изображения"
+                          Grid.Row="0"
+                          Foreground="#1c2541"
+                          HorizontalAlignment="Center"
+                          Margin="10,10,10,0"/>
+
+                <!-- Область изображения -->
+                <Border Grid.Row="1"
+                        Margin="10"
+                        Background="#f8f9fa"
+                        BorderBrush="#dee2e6"
+                        BorderThickness="1.8"
+                        CornerRadius="10">
+                    <Viewbox Margin="10"
+                             Stretch="Uniform" 
+                             MaxWidth="600" 
+                             MaxHeight="800">
+                        <Image x:Name="PreviewImage"
+                               Source="{Binding PreviewImageSource}"
+                               Stretch="Uniform"/>
+                    </Viewbox>
+                </Border>
+
+                <!-- Информация о изображении -->
+                <StackPanel Grid.Row="2" Margin="15,0,10,15">
+                    <TextBlock x:Name="PreviewFileName"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,5"/>
+                    <TextBlock x:Name="PreviewResolution"
+                               FontSize="12"
+                               Foreground="#666"/>
+                    <TextBlock x:Name="PreviewFileSize"
+                               FontSize="12"
+                               Foreground="#666"/>
+                    <TextBlock x:Name="PreviewFormat"
+                               FontSize="12"
+                               Foreground="#666"/>
+                </StackPanel>
+
+                <!-- Сообщение когда нет выбора -->
+                <TextBlock x:Name="NoPreviewText"
+                           Grid.Row="1"
+                           Text="Выберите изображение для просмотра"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center"
+                           Foreground="#999"
+                           FontStyle="Italic"
+                           Visibility="Visible"/>
+            </Grid>
+        </Border>
+
+
+
+        <!--Столбик Info-->
         <DataGrid x:Name="ImageGrid"
-                  Grid.Row="0" Grid.Column="0"
+                  Grid.Row="0" Grid.Column="1"
                   Margin="15,15,15,10"
                   IsReadOnly="True"
                   RowDetailsVisibilityMode="Collapsed"
@@ -38,7 +111,8 @@
                   VirtualizingStackPanel.IsVirtualizing="False"
                   FontSize="16"
                   FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"
-                  MouseDoubleClick="ImageGrid_MouseDoubleClick">
+                  MouseDoubleClick="ImageGrid_MouseDoubleClick"
+                  SelectionChanged="ImageGrid_SelectionChanged">
             <DataGrid.Resources>
                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
                                  Color="#568CF7"/>
@@ -100,7 +174,7 @@
             </DataGrid.RowStyle>
         </DataGrid>
 
-        <StackPanel Grid.Row="1" Grid.Column="0"
+        <StackPanel Grid.Row="1" Grid.Column="1"
                     Margin="0,0,0,15"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center">
@@ -123,20 +197,13 @@
                               MouseLeftButtonDown="GetNoAuthor_MouseLeftButtonDown" />
         </StackPanel>
 
-        <local:Controller x:Name="Cancel"
-                          Grid.Row="1" Grid.Column="0"
-                          Margin="0,0,15,15"
-                          GlobalWidth="45" FigureWidth="35"
-                          Purpose="Action"                      
-                          Command="||"
-                          Visibility="Collapsed"
-                          HorizontalAlignment="Right"
-                          MouseLeftButtonDown="Cancel_MouseLeftButtonDown" />
         
-        
-        <!--Столбик 2-->
-        <Grid Grid.Row="0" Grid.Column="1"
-              Margin="0,15,15,15">
+
+        <!--Столбик Move-->
+        <Grid Name="MoveGrid" 
+              Grid.Row="0" Grid.Column="2"
+              Margin="0,15,15,15"
+              Visibility="Visible">
             <Grid.RowDefinitions>
                 <RowDefinition Height="125" />
                 <RowDefinition Height="Auto" />
@@ -159,7 +226,7 @@
                          x:Name="TemplateTextBox" 
                          Text="{Binding NameMoveTemplate, 
                                 UpdateSourceTrigger=PropertyChanged,
-                                Mode=TwoWay}"/> 
+                                Mode=TwoWay}"/>
             </Grid>
 
             <DataGrid x:Name="ImageNameFilesMoveGrid" 
@@ -175,14 +242,15 @@
                       VerticalAlignment="Stretch"
                       VirtualizingStackPanel.IsVirtualizing="False"
                       FontSize="16"
-                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular" >
+                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular" 
+                      SelectionChanged="MoveGrid_SelectionChanged">
                 <DataGrid.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
                                      Color="#568CF7"/>
                     <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
                                      Color="#90B1F3"/>
                 </DataGrid.Resources>
-                
+
                 <DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding Index}" 
                                         Header="Ном." 
@@ -227,17 +295,18 @@
             </StackPanel>
         </Grid>
 
-        
-        
-        <!--Столбик 3-->
-        <Grid Grid.Row="0" Grid.Column="2"
-              Margin="0,15,15,15">
+
+
+        <!--Столбик Replace-->
+        <Grid Name="ReplaceGrid" 
+              Grid.Row="0" Grid.Column="2"
+              Margin="0,15,15,15"
+              Visibility="Hidden">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40" />
                 <RowDefinition Height="50" />
                 <RowDefinition Height="35" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
@@ -279,7 +348,7 @@
                                         Mode=TwoWay}"/>
             </Grid>
 
-            <StackPanel Grid.Row="2" Grid.Column="2"
+            <StackPanel Grid.Row="2"
                         Margin="0,15,0,0"
                         Orientation="Horizontal"
                         HorizontalAlignment="Center">
@@ -309,17 +378,17 @@
                       Background="#fff"
                       VerticalGridLinesBrush="#1c2541"
                       HorizontalGridLinesBrush="#1c2541"
-                      VerticalAlignment="Stretch"
                       VirtualizingStackPanel.IsVirtualizing="False"
                       FontSize="16"
-                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular" >
+                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"
+                      SelectionChanged="ReplaceGrid_SelectionChanged">
                 <DataGrid.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
                                      Color="#568CF7"/>
                     <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
                                      Color="#90B1F3"/>
                 </DataGrid.Resources>
-                
+
                 <DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding Index}" 
                             Header="Ном." 
@@ -347,7 +416,7 @@
                 </DataGrid.RowStyle>
             </DataGrid>
 
-            <StackPanel Grid.Row="4"
+            <StackPanel Grid.Row="5"
                         Margin="0,10,0,0"
                         Orientation="Horizontal"
                         HorizontalAlignment="Center"
@@ -369,19 +438,29 @@
 
 
         <!--Внизу-->
+        <local:Controller x:Name="Cancel"
+                          Grid.Row="1" Grid.Column="1"
+                          Margin="0,0,15,15"
+                          GlobalWidth="45" FigureWidth="35"
+                          Purpose="Action"                      
+                          Command="||"
+                          Visibility="Collapsed"
+                          HorizontalAlignment="Right"
+                          MouseLeftButtonDown="Cancel_MouseLeftButtonDown" />
+
         <TextBlock Name="Count" 
-                   Grid.Row="3"
+                   Grid.Row="3" Grid.Column="1"
                    Margin="25,0,0,10"
                    Width="150" Height="24"  
                    HorizontalAlignment="Left"
                    TextAlignment="Left" />
 
         <TextBlock Name="SelectedFolder"
-                   Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
-                   Margin="0,0,25,10"
+                   Grid.Row="3" 
+                   Margin="25,0,0,10"
                    Text="Папка не выбрана"
                    Height="24"  
-                   HorizontalAlignment="Right"
-                   TextAlignment="Right" />
+                   HorizontalAlignment="Left"
+                   TextAlignment="Left" />
     </Grid>
 </Window>

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Media;
 
 namespace Reviser
 {
@@ -29,9 +32,9 @@ namespace Reviser
                 double ratio = Convert.ToDouble(AspectRatio);
                 double maxWidth = 16; 
 
-                if (ratio >= 1.0) 
+                if (ratio <= 1.0) 
                     return maxWidth;
-                else return maxWidth * ratio;
+                else return maxWidth / ratio;
             }
         }
 
@@ -42,10 +45,40 @@ namespace Reviser
                 double ratio = Convert.ToDouble(AspectRatio);
                 double maxHeight = 16; 
 
-                if (ratio <= 1.0) 
+                if (ratio >= 1.0) 
                     return maxHeight;
-                else return maxHeight / ratio;
+                else return maxHeight * ratio;
             }
+        }
+
+        private string filePath;
+        private ImageSource previewImageSource;
+
+        public string FilePath
+        {
+            get => filePath;
+            set
+            {
+                filePath = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // Источник изображения для превью
+        public ImageSource PreviewImageSource
+        {
+            get => previewImageSource;
+            set
+            {
+                previewImageSource = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
     }

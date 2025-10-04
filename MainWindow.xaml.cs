@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Point = System.Windows.Point;
 
 namespace Reviser
 {
@@ -96,6 +98,29 @@ namespace Reviser
 
 
 
+        #region Горячие клавиши
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.X: 
+                    if (MoveGrid.Visibility == Visibility.Visible)
+                    {
+                        MoveGrid.Visibility = Visibility.Hidden;
+                        ReplaceGrid.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        MoveGrid.Visibility = Visibility.Visible;
+                        ReplaceGrid.Visibility = Visibility.Hidden;
+                    }
+                    break;
+            }
+        }
+        #endregion
+
+
+
         #region Главные методы
         private void ChooseImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -125,6 +150,7 @@ namespace Reviser
             {
                 directoryPath = Path.GetDirectoryName(fileDialog.FileName);
                 ImageInfoItems.Clear();
+                ClearPreviewOnFolderChange();
             }
 
             SelectedFolder.Text = directoryPath;
@@ -229,6 +255,7 @@ namespace Reviser
                     {
                         Index = index,
                         FileName = fileName,
+                        FilePath = fullPath,
                         Resolution = $"{width}x{height}",
                         AspectRatio = (height / (double)width).ToString("F3"),
                         FileSize = FormatFileSize(fileInfo.Length),
@@ -243,6 +270,7 @@ namespace Reviser
                 {
                     Index = index,
                     FileName = Path.GetFileName(fullPath) + " (ошибка)",
+                    FilePath = fullPath,
                     Resolution = "—",
                     AspectRatio = "—",
                     FileSize = "—",
@@ -464,6 +492,242 @@ namespace Reviser
         private void RenameReplace_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             RenameSave(ImageNameReplaceFiles);
+        }
+        #endregion
+
+
+
+        #region Превью изображений
+        [Obsolete]
+        private async void ImageGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            var selectedItem = ImageGrid.SelectedItem as ImageInfoItem;
+            if (selectedItem != null && !string.IsNullOrEmpty(directoryPath))
+            {
+                await LoadImagePreview(selectedItem);
+            }
+            else
+            {
+                ClearImagePreview();
+            }
+        }
+
+        [Obsolete]
+        private async Task LoadImagePreview(ImageInfoItem item)
+        {
+            try
+            {
+                string fullPath = Path.Combine(directoryPath, item.FileName);
+
+                if (File.Exists(fullPath))
+                {
+                    // Загружаем изображение в фоновом потоке
+                    var bitmap = await Task.Run(() => LoadBitmapImage(fullPath));
+
+                    // Устанавливаем в UI потоке
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        PreviewImage.Source = bitmap;
+                        PreviewFileName.Text = item.FileName;
+                        PreviewResolution.Text = $"Разрешение: {item.Resolution}";
+                        PreviewFileSize.Text = $"Размер: {item.FileSize}";
+                        PreviewFormat.Text = $"Формат: {item.Format}";
+                        NoPreviewText.Visibility = Visibility.Collapsed;
+                    });
+                }
+                else
+                {
+                    ClearImagePreview();
+                    PreviewFileName.Text = "Файл не найден";
+                }
+            }
+            catch (Exception ex)
+            {
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    ClearImagePreview();
+                    PreviewFileName.Text = $"Ошибка загрузки: {ex.Message}";
+                });
+            }
+        }
+
+        [Obsolete]
+        private BitmapImage LoadBitmapImage(string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                    return CreateErrorImage();
+
+                var fileInfo = new FileInfo(filePath);
+                if (fileInfo.Length == 0)
+                    return CreateErrorImage();
+
+                // Используем Uri вместо Stream для избежания проблем с кэшем
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
+                bitmap.DecodePixelWidth = 1000;
+                bitmap.CreateOptions = BitmapCreateOptions.None;
+                bitmap.EndInit();
+
+                // Даем время на загрузку
+                if (bitmap.IsDownloading)
+                {
+                    bitmap.DownloadCompleted += (s, e) =>
+                    {
+                        bitmap.Freeze();
+                    };
+                }
+                else
+                {
+                    bitmap.Freeze();
+                }
+
+                return bitmap;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки {filePath}: {ex.Message}");
+                return CreateErrorImage();
+            }
+        }
+
+        // Создание изображения-заглушки при ошибке
+        [Obsolete]
+        private BitmapImage CreateErrorImage()
+        {
+            try
+            {
+                // Создаем простое изображение с сообщением об ошибке
+                var drawingVisual = new DrawingVisual();
+                using (var drawingContext = drawingVisual.RenderOpen())
+                {
+                    drawingContext.DrawRectangle(System.Windows.Media.Brushes.LightGray, null, new Rect(0, 0, 200, 150));
+                    drawingContext.DrawText(
+                        new FormattedText("Ошибка загрузки",
+                                        System.Globalization.CultureInfo.CurrentCulture,
+                                        FlowDirection.LeftToRight,
+                                        new Typeface("Arial"),
+                                        12,
+                                        System.Windows.Media.Brushes.Red),
+                        new Point(10, 65));
+                }
+
+                var renderTarget = new RenderTargetBitmap(200, 150, 96, 96, PixelFormats.Pbgra32);
+                renderTarget.Render(drawingVisual);
+
+                var bitmap = new BitmapImage();
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(renderTarget));
+
+                using (var stream = new MemoryStream())
+                {
+                    encoder.Save(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.StreamSource = stream;
+                    bitmap.EndInit();
+                }
+
+                bitmap.Freeze();
+                return bitmap;
+            }
+            catch
+            {
+                // Если даже заглушка не создалась, возвращаем null
+                return null;
+            }
+        }
+
+        private void ClearImagePreview()
+        {
+            PreviewImage.Source = null;
+            PreviewFileName.Text = "";
+            PreviewResolution.Text = "";
+            PreviewFileSize.Text = "";
+            PreviewFormat.Text = "";
+            NoPreviewText.Visibility = Visibility.Visible;
+        }
+
+        private void ClearPreviewOnFolderChange()
+        {
+            ClearImagePreview();
+            ImageGrid.SelectedItem = null;
+        }
+
+        [Obsolete]
+        private void MoveGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            var selectedItem = ImageNameFilesMoveGrid.SelectedItem as ImageNewName;
+            if (selectedItem != null)
+            {
+                LoadImagePreviewFromPath(selectedItem.OriginalPath, selectedItem.OriginalName);
+            }
+            else
+            {
+                ClearImagePreview();
+            }
+        }
+
+        [Obsolete]
+        private void ReplaceGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            var selectedItem = ImageNameFilesReplaceGrid.SelectedItem as ImageNewName;
+            if (selectedItem != null)
+            {
+                LoadImagePreviewFromPath(selectedItem.OriginalPath, selectedItem.OriginalName);
+            }
+            else
+            {
+                ClearImagePreview();
+            }
+        }
+
+        [Obsolete]
+        private async void LoadImagePreviewFromPath(string filePath, string fileName)
+        {
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    var bitmap = await Task.Run(() => LoadBitmapImage(filePath));
+
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        PreviewImage.Source = bitmap;
+                        PreviewFileName.Text = fileName;
+
+                        var fileInfo = new FileInfo(filePath);
+                        PreviewFileSize.Text = $"Размер: {FormatFileSize(fileInfo.Length)}";
+
+                        // Получаем разрешение из изображения
+                        using (var image = System.Drawing.Image.FromFile(filePath))
+                        {
+                            PreviewResolution.Text = $"Разрешение: {image.Width}x{image.Height}";
+                            PreviewFormat.Text = $"Формат: {Path.GetExtension(filePath).ToUpper().TrimStart('.')}";
+                        }
+
+                        NoPreviewText.Visibility = Visibility.Collapsed;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        ClearImagePreview();
+                        PreviewFileName.Text = $"Ошибка загрузки: {ex.Message}";
+                    });
+                }
+            }
+            else
+            {
+                ClearImagePreview();
+                PreviewFileName.Text = "Файл не найден";
+            }
         }
         #endregion
 
