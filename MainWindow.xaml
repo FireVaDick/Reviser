@@ -436,17 +436,26 @@
         </Grid>
 
 
-
+        
         <!--Внизу-->
         <local:Controller x:Name="Cancel"
                           Grid.Row="1" Grid.Column="1"
-                          Margin="0,0,15,15"
+                          Margin="0,0,60,15"
                           GlobalWidth="45" FigureWidth="35"
                           Purpose="Action"                      
                           Command="||"
                           Visibility="Collapsed"
                           HorizontalAlignment="Right"
                           MouseLeftButtonDown="Cancel_MouseLeftButtonDown" />
+
+        <local:Controller x:Name="SwapX"
+                          Grid.Row="1" Grid.Column="1"
+                          Margin="0,0,15,15"
+                          GlobalWidth="45" FigureWidth="35"
+                          Purpose="Action"                      
+                          Command="X"
+                          HorizontalAlignment="Right"
+                          MouseLeftButtonDown="SwapX_MouseLeftButtonDown" />
 
         <TextBlock Name="Count" 
                    Grid.Row="3" Grid.Column="1"

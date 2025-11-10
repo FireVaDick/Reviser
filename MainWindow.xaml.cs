@@ -103,17 +103,8 @@ namespace Reviser
         {
             switch (e.Key)
             {
-                case Key.X: 
-                    if (MoveGrid.Visibility == Visibility.Visible)
-                    {
-                        MoveGrid.Visibility = Visibility.Hidden;
-                        ReplaceGrid.Visibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        MoveGrid.Visibility = Visibility.Visible;
-                        ReplaceGrid.Visibility = Visibility.Hidden;
-                    }
+                case Key.X:
+                    SwapX_MouseLeftButtonDown(null, null);
                     break;
             }
         }
@@ -130,6 +121,19 @@ namespace Reviser
         private async void LoadFullTable_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             await LoadTable(true);
+        }
+        private void SwapX_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (MoveGrid.Visibility == Visibility.Visible)
+            {
+                MoveGrid.Visibility = Visibility.Hidden;
+                ReplaceGrid.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                MoveGrid.Visibility = Visibility.Visible;
+                ReplaceGrid.Visibility = Visibility.Hidden;
+            }
         }
 
         private void Cancel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -404,7 +408,6 @@ namespace Reviser
                     }
                 }
             }
-            MessageBox.Show("Готово!");
         }
         #endregion
 
