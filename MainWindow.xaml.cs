@@ -244,16 +244,19 @@ namespace Reviser
 
             try
             {
-                using (var image = Image.FromFile(fullPath))
+                var fileInfo = new FileInfo(fullPath);
+                string fileName = Path.GetFileName(fullPath);
+
+                // Используем FileStream для чтения изображения без блокировки
+                using (var fs = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var image = System.Drawing.Image.FromStream(fs))
                 {
-                    var fileInfo = new FileInfo(fullPath);
-                    string fileName = Path.GetFileName(fullPath);
                     int width = image.Width;
                     int height = image.Height;
 
-                    string format = image.RawFormat.Equals(ImageFormat.Jpeg) ? "JPG" :
-                                    image.RawFormat.Equals(ImageFormat.Png) ? "PNG" :
-                                    image.RawFormat.Equals(ImageFormat.Gif) ? "GIF" : "Unknown";
+                    string format = image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Jpeg) ? "JPG" :
+                                    image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Png) ? "PNG" :
+                                    image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Gif) ? "GIF" : "Unknown";
 
                     return new ImageInfoItem
                     {
@@ -300,7 +303,7 @@ namespace Reviser
 
 
 
-        #region Доп фильтры
+        #region Дополнительные кнопки
         private void GetNoAuthor_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var itemsToRemove = new List<ImageInfoItem>();
@@ -340,6 +343,124 @@ namespace Reviser
             for (int i = 0; i < ImageInfoItems.Count; i++)
             {
                 ImageInfoItems[i].Index = i + 1;
+            }
+        }
+
+        private void CreateFolders_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (string.IsNullOrEmpty(directoryPath))
+            {
+                MessageBox.Show("Сначала выберите папку с изображениями");
+                return;
+            }
+
+            if (ImageInfoItems.Count == 0)
+            {
+                MessageBox.Show("Сначала загрузите таблицу изображений", "Информация",
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Создаем подпапки
+            string portraitPath = Path.Combine(directoryPath, "Portrait");
+            string landscapePath = Path.Combine(directoryPath, "Landscape");
+            string squarePath = Path.Combine(directoryPath, "Square");
+
+            Directory.CreateDirectory(portraitPath);
+            Directory.CreateDirectory(landscapePath);
+            Directory.CreateDirectory(squarePath);
+
+            int movedCount = 0;
+            int errorCount = 0;
+            int alreadySortedCount = 0;
+
+            foreach (var item in ImageInfoItems)
+            {
+                try
+                {
+                    // Проверяем, существует ли файл
+                    if (!File.Exists(item.FilePath))
+                    {
+                        errorCount++;
+                        continue;
+                    }
+
+                    // Проверяем, не находится ли файл уже в одной из целевых папок
+                    string currentDir = Path.GetDirectoryName(item.FilePath);
+                    if (currentDir == portraitPath || currentDir == landscapePath || currentDir == squarePath)
+                    {
+                        alreadySortedCount++;
+                        continue;
+                    }
+
+                    // Получаем соотношение сторон из уже рассчитанных данных
+                    if (double.TryParse(item.AspectRatio.Replace('.', ','), out double aspectRatio))
+                    {
+                        string destinationFolder;
+
+                        if (aspectRatio < 0.9)
+                            destinationFolder = landscapePath;
+                        else if (aspectRatio > 1.1)
+                            destinationFolder = portraitPath;
+                        else
+                            destinationFolder = squarePath;
+
+                        // Проверяем, не перемещаем ли мы в ту же папку
+                        if (Path.GetDirectoryName(item.FilePath).Equals(destinationFolder, StringComparison.OrdinalIgnoreCase))
+                        {
+                            alreadySortedCount++;
+                            continue;
+                        }
+
+                        string fileName = Path.GetFileName(item.FilePath);
+                        string destPath = Path.Combine(destinationFolder, fileName);
+
+                        // Если файл уже существует в папке назначения, переименуем
+                        if (File.Exists(destPath))
+                        {
+                            string nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+                            string extension = Path.GetExtension(fileName);
+                            int counter = 1;
+                            do
+                            {
+                                destPath = Path.Combine(destinationFolder, $"{nameWithoutExt}_{counter}{extension}");
+                                counter++;
+                            } while (File.Exists(destPath));
+                        }
+
+                        // Перемещаем файл
+                        File.Move(item.FilePath, destPath);
+
+                        // Обновляем путь в элементе таблицы
+                        item.FilePath = destPath;
+                        movedCount++;
+                    }
+                    else
+                    {
+                        errorCount++;
+                        Debug.WriteLine($"Не удалось распознать соотношение сторон для файла: {item.FileName}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errorCount++;
+                    Debug.WriteLine($"Не удалось переместить файл {item.FileName}: {ex.Message}");
+                }
+            }
+
+            // Обновляем отображение таблицы (опционально)
+            // Можно перезагрузить таблицу, чтобы увидеть новые пути
+            if (MessageBox.Show($"Сортировка завершена!\n\n" +
+                               $"Перемещено файлов: {movedCount}\n" +
+                               $"Уже отсортировано: {alreadySortedCount}\n" +
+                               $"Ошибок: {errorCount}\n\n" +
+                               $"Обновить текущую таблицу?",
+                               "Информация",
+                               MessageBoxButton.YesNo,
+                               MessageBoxImage.Information) == MessageBoxResult.Yes)
+            {
+                // Перезагружаем таблицу
+                _ = LoadTable(true);
             }
         }
         #endregion
@@ -453,11 +574,16 @@ namespace Reviser
 
             if (useReplaceMode)
             {
-                string position = "End";
+                string position = "";
+
                 if (PositionStart.IsChecked == true) 
                     position = "Start";
-                else if (PositionMiddle.IsChecked == true)
-                    position = "Middle";
+                else if (PositionEnd.IsChecked == true)
+                    position = "End";
+                else if (PositionReplace.IsChecked == true)
+                    position = "Replace";
+                else if (PositionBeforeNumber.IsChecked == true)
+                    position = "BeforeNumber";
 
                 // Фильтруем и переименовываем в фоне
                 var filteredList = await Task.Run(() =>

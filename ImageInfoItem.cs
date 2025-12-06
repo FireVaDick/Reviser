@@ -20,8 +20,12 @@ namespace Reviser
             get
             {
                 string name = FileName?.ToLowerInvariant() ?? "";
-                if (name.Contains(" ecchi ")) return "#000";
-                if (name.Contains(" porn ")) return "#001";  
+                if (name.Contains("{1s}")) return "#001";
+                else if (name.Contains("{2e}")) return "#002";
+                else if (name.Contains("{3n}")) return "#003";
+                else if (name.Contains("{4c}")) return "#004";
+                else if (name.Contains("{5j}")) return "#005";
+                else if (name.Contains("{6h}")) return "#006";
                 return null;
             }
         }

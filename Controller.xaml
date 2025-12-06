@@ -6,7 +6,8 @@
              mc:Ignorable="d" 
              d:DesignWidth="80" d:DesignHeight="40"
              Width="{Binding GlobalWidth}" Height="40"
-             Cursor="Hand" FontSize="13" FontFamily="v_DistrictTF-Regular"
+             Cursor="Hand" FontSize="13"
+             FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"      
              HorizontalAlignment="Center" VerticalAlignment="Top"
              Loaded="Controller_Loaded"
              MouseLeftButtonUp="Controller_MouseLeftButtonUp"
@@ -17,14 +18,14 @@
         <Rectangle Name="Shadow" 
                    Margin="2,2,0,0"
                    StrokeThickness="1.5"
-                   Fill="{Binding FillColor}"
+                   Fill="{Binding BackColor}"
                    Stroke="Black"  
                    Width="{Binding FigurelWidth}" Height="36"
                    RadiusX="4" RadiusY="4" />
         
         <Rectangle Name="Figure" 
                    StrokeThickness="1.5"
-                   Fill="{Binding FillColor}"
+                   Fill="{Binding BackColor}"
                    Stroke="Black"  
                    Width="{Binding FigurelWidth}" Height="36"
                    RadiusX="4" RadiusY="4" />

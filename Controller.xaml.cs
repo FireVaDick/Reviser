@@ -9,7 +9,7 @@ namespace Reviser
         #region Свойства
         public static readonly DependencyProperty GlobalWidthProperty = DependencyProperty.Register("GlobalWidth", typeof(double), typeof(Controller), new PropertyMetadata(null));
         public static readonly DependencyProperty FigureWidthProperty = DependencyProperty.Register("FigurelWidth", typeof(double), typeof(Controller), new PropertyMetadata(null));
-        public static readonly DependencyProperty FillColorProperty = DependencyProperty.Register("FillColor", typeof(Brush), typeof(Controller), new PropertyMetadata(null));
+        public static readonly DependencyProperty BackColorProperty = DependencyProperty.Register("BackColor", typeof(Brush), typeof(Controller), new PropertyMetadata(null));
         public static readonly DependencyProperty StartColorProperty = DependencyProperty.Register("StartColor", typeof(Brush), typeof(Controller), new PropertyMetadata(null));
         public static readonly DependencyProperty HoverColorProperty = DependencyProperty.Register("HoverColor", typeof(Brush), typeof(Controller), new PropertyMetadata(null));
         public static readonly DependencyProperty TextColorProperty = DependencyProperty.Register("TextColor", typeof(Brush), typeof(Controller), new PropertyMetadata(null));
@@ -28,10 +28,10 @@ namespace Reviser
             set { SetValue(FigureWidthProperty, value); }
         }
 
-        public Brush FillColor
+        public Brush BackColor
         {
-            get { return (Brush)GetValue(FillColorProperty); }
-            set { SetValue(FillColorProperty, value); }
+            get { return (Brush)GetValue(BackColorProperty); }
+            set { SetValue(BackColorProperty, value); }
         }
 
         public Brush StartColor
@@ -77,7 +77,7 @@ namespace Reviser
             DataContext = this;
 
             TextColor = Brushes.Black;
-            FillColor = StartColor = Brushes.White;
+            BackColor = StartColor = Brushes.White;
         }
 
         public Controller(string title)
@@ -90,7 +90,7 @@ namespace Reviser
             FigureWidth = 136; 
 
             TextColor = Brushes.Black;
-            FillColor = StartColor = Brushes.White;
+            BackColor = StartColor = Brushes.White;
         }
 
         private void Controller_Loaded(object sender, RoutedEventArgs e)
@@ -118,7 +118,7 @@ namespace Reviser
                     TextColor = Brushes.White; break;
             }
 
-            FillColor = StartColor;
+            BackColor = StartColor;
         }
 
 
@@ -138,7 +138,7 @@ namespace Reviser
             if (((Controller)sender).IsEnabled &&
                 ((Controller)sender).HoverColor != Brushes.Black &&
                 ((Controller)sender).StartColor != ((Controller)sender).HoverColor)
-                Animation.CreateColorAnimation((Controller)sender, FillColor, ((SolidColorBrush)HoverColor).Color, 0.35);
+                Animation.CreateColorAnimation((Controller)sender, BackColor, ((SolidColorBrush)HoverColor).Color, 0.35);
         }
 
         private void Controller_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
@@ -146,7 +146,7 @@ namespace Reviser
             if (((Controller)sender).IsEnabled &&
                 ((Controller)sender).HoverColor != Brushes.Black &&
                 ((Controller)sender).StartColor != ((Controller)sender).HoverColor)
-                Animation.CreateColorAnimation((Controller)sender, FillColor, ((SolidColorBrush)StartColor).Color, 0.35);
+                Animation.CreateColorAnimation((Controller)sender, BackColor, ((SolidColorBrush)StartColor).Color, 0.35);
 
             ((Controller)sender).Figure.Visibility = Visibility.Visible;
         }

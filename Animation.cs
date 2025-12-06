@@ -12,7 +12,7 @@ namespace Reviser
         static public void CreateColorAnimation(Controller controller, Brush fromValue, Color endValue, double duration)
         {
             SolidColorBrush brush = new SolidColorBrush(((SolidColorBrush)fromValue).Color);
-            controller.FillColor = brush;
+            controller.BackColor = brush;
 
             ColorAnimation colorAnimation = new ColorAnimation();
             colorAnimation.To = endValue;
@@ -23,7 +23,7 @@ namespace Reviser
         static public void CreateInfiniteColorAnimation(Controller controller, Color fromValue, Color endValue, double duration)
         {
             SolidColorBrush brush = new SolidColorBrush(fromValue);
-            controller.FillColor = brush;
+            controller.BackColor = brush;
 
             ColorAnimation colorAnimation = new ColorAnimation();
             colorAnimation.From = fromValue;

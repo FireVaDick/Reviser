@@ -101,39 +101,52 @@ namespace Reviser
             if (foundIndex == -1)
                 return null;
 
-            // Удаляем найденное слово
-            var newWordList = new List<string>(words);
-            newWordList.RemoveAt(foundIndex);
-
-            // Теперь ищем позицию числа
-            int numberIndex = -1;
-            for (int i = 0; i < newWordList.Count; i++)
+            // Для режима "Заменить" просто заменяем слово
+            if (position == "Replace")
             {
-                if (Regex.IsMatch(newWordList[i], @"^\d+(?:\.\d+)?$"))
+                // Заменяем найденное слово
+                words[foundIndex] = wordToReplace;
+                return string.Join(" ", words) + extension;
+            }
+            else
+            {
+                // Старая логика для других позиций
+                var newWordList = new List<string>(words);
+                newWordList.RemoveAt(foundIndex);
+
+                // Теперь ищем позицию числа
+                int numberIndex = -1;
+                for (int i = 0; i < newWordList.Count; i++)
                 {
-                    numberIndex = i;
-                    break; // берём первое число
+                    if (Regex.IsMatch(newWordList[i], @"^\d+(?:\.\d+)?$"))
+                    {
+                        numberIndex = i;
+                        break; // берём первое число
+                    }
                 }
-            }
 
-            // Вставляем замену в указанную позицию
-            switch (position)
-            {
-                case "Start":
-                    newWordList.Insert(0, wordToReplace);
-                    break;
-                case "Middle":
-                    newWordList.Insert(numberIndex, wordToReplace);
-                    break;
-                case "End":
-                default:
-                    newWordList.Add(wordToReplace);
-                    break;
-            }
+                // Вставляем замену в указанную позицию
+                switch (position)
+                {
+                    case "Start":
+                        newWordList.Insert(0, wordToReplace);
+                        break;
+                    case "BeforeNumber":
+                        if (numberIndex != -1)
+                            newWordList.Insert(numberIndex, wordToReplace);
+                        else
+                            newWordList.Add(wordToReplace);
+                        break;
+                    case "End":
+                    default:
+                        newWordList.Add(wordToReplace);
+                        break;
+                }
 
-            // Собираем обратно
-            string newName = string.Join(" ", newWordList);
-            return newName + extension;
+                // Собираем обратно
+                string newName = string.Join(" ", newWordList);
+                return newName + extension;
+            }
         }
 
     }
