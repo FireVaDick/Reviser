@@ -8,12 +8,111 @@ namespace Reviser
     public class ImageInfoItem
     {
         #region Свойства
-        public int Index { get; set; }
-        public string FileName { get; set; }
+        private int index;
+        private string fileName;
+        private string filePath;
+        private ImageSource previewImageSource;
+
+        private string character;
+        private string author;
+        private string classs;
+        private string number;
+        private string tags;
+
         public string Resolution { get; set; }
         public string AspectRatio { get; set; }
         public string FileSize { get; set; }
         public string Format { get; set; }
+
+        public int Index
+        {
+            get => index;
+            set
+            {
+                index = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string FileName
+        {
+            get => fileName;
+            set
+            {
+                fileName = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string FilePath
+        {
+            get => filePath;
+            set
+            {
+                filePath = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ImageSource PreviewImageSource
+        {
+            get => previewImageSource;
+            set
+            {
+                previewImageSource = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Character
+        {
+            get => character;
+            set
+            {
+                character = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Author
+        {
+            get => author;
+            set
+            {
+                author = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Class
+        {
+            get => classs;
+            set
+            {
+                classs = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Number
+        {
+            get => number;
+            set
+            {
+                number = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Tags
+        {
+            get => tags;
+            set
+            {
+                tags = value;
+                OnPropertyChanged();
+            }
+        }
 
         public string BackColor
         {
@@ -52,30 +151,6 @@ namespace Reviser
                 if (ratio >= 1.0) 
                     return maxHeight;
                 else return maxHeight * ratio;
-            }
-        }
-
-        private string filePath;
-        private ImageSource previewImageSource;
-
-        public string FilePath
-        {
-            get => filePath;
-            set
-            {
-                filePath = value;
-                OnPropertyChanged();
-            }
-        }
-
-        // Источник изображения для превью
-        public ImageSource PreviewImageSource
-        {
-            get => previewImageSource;
-            set
-            {
-                previewImageSource = value;
-                OnPropertyChanged();
             }
         }
 

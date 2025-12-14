@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -23,8 +23,8 @@ namespace Reviser
     {
         #region Шаблоны
         private string nameMoveTemplate = "{character} [author] {number}";
-        private string findTemplate = "";
-        private string replaceTemplate = "";
+        private string nameFindTemplate = "";
+        private string nameReplaceTemplate = "";
 
 
 
@@ -38,22 +38,22 @@ namespace Reviser
             }
         }
 
-        public string FindTemplate
+        public string NameFindTemplate
         {
-            get => findTemplate;
+            get => nameFindTemplate;
             set
             {
-                findTemplate = value;
+                nameFindTemplate = value;
                 OnPropertyChanged();
             }
         }
 
-        public string ReplaceTemplate
+        public string NameReplaceTemplate
         {
-            get => replaceTemplate;
+            get => nameReplaceTemplate;
             set
             {
-                replaceTemplate = value;
+                nameReplaceTemplate = value;
                 OnPropertyChanged();
             }
         }
@@ -67,16 +67,24 @@ namespace Reviser
         #endregion
 
 
+
+        private ObservableCollection<ImageInfoItem> allImageItems = new ObservableCollection<ImageInfoItem>();
+        private ObservableCollection<ImageInfoItem> authorImageItems = new ObservableCollection<ImageInfoItem>();
+        private ObservableCollection<ImageInfoItem> tagImageItems = new ObservableCollection<ImageInfoItem>();
         private ObservableCollection<ImageNewName> ImageNameMoveFiles { get; set; } = new ObservableCollection<ImageNewName>();
         private ObservableCollection<ImageNewName> ImageNameReplaceFiles { get; set; } = new ObservableCollection<ImageNewName>();
 
-        private readonly ObservableCollection<ImageInfoItem> ImageInfoItems = new ObservableCollection<ImageInfoItem>();
+        private CancellationTokenSource cancellationTokenSource;
         private static string directoryPath;
 
-        private CancellationTokenSource cancellationTokenSource;
+        private Dictionary<string, int> authorStatistics = new Dictionary<string, int>();
+
+        private System.Windows.Threading.DispatcherTimer authorUpdateTimer;
+        private bool authorsListNeedsUpdate = false;
 
 
 
+        #region Конструктор
         public MainWindow()
         {
             InitializeComponent();
@@ -84,17 +92,29 @@ namespace Reviser
             this.Left = (SystemParameters.FullPrimaryScreenWidth - this.Width) / 2;
             this.Top = (SystemParameters.FullPrimaryScreenHeight - this.Height) / 2;
 
-            ImageGrid.Items.Clear();
-            ImageGrid.ItemsSource = ImageInfoItems;
+            AllImageGrid.ItemsSource = allImageItems;
+            AuthorImageGrid.ItemsSource = authorImageItems;
+            TagImageGrid.ItemsSource = tagImageItems;
+            MoveImageGrid.ItemsSource = ImageNameMoveFiles;
+            ReplaceImageGrid.ItemsSource = ImageNameReplaceFiles;
 
-            ImageNameFilesMoveGrid.Items.Clear();
-            ImageNameFilesMoveGrid.ItemsSource = ImageNameMoveFiles;
-
-            ImageNameFilesReplaceGrid.Items.Clear();
-            ImageNameFilesReplaceGrid.ItemsSource = ImageNameReplaceFiles;
+            authorUpdateTimer = new System.Windows.Threading.DispatcherTimer();
+            authorUpdateTimer.Interval = TimeSpan.FromSeconds(2); // Обновление каждые 2 секунды
+            authorUpdateTimer.Tick += AuthorUpdateTimer_Tick;
+            authorUpdateTimer.Start();
 
             DataContext = this;
         }
+
+        private void AuthorUpdateTimer_Tick(object sender, EventArgs e)
+        {
+            if (authorsListNeedsUpdate && AuthorContainer.Visibility == Visibility.Visible)
+            {
+                UpdateAuthorsList();
+                authorsListNeedsUpdate = false;
+            }
+        }
+        #endregion
 
 
 
@@ -104,9 +124,92 @@ namespace Reviser
             switch (e.Key)
             {
                 case Key.X:
-                    SwapX_MouseLeftButtonDown(null, null);
+                    //SwapX_MouseLeftButtonDown(null, null);
                     break;
             }
+        }
+        #endregion
+
+
+
+        #region Переключатели
+        private void ShowAllImageGridOption_Checked(object sender, RoutedEventArgs e)
+        {
+            AllImageGrid.Visibility = Visibility.Visible;
+            AuthorImageGrid.Visibility = Visibility.Collapsed;
+            TagImageGrid.Visibility = Visibility.Collapsed;
+            ReplaceImageGrid.Visibility = Visibility.Collapsed;
+            MoveImageGrid.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowAuthorImageGridOption_Checked(object sender, RoutedEventArgs e)
+        {
+            AllImageGrid.Visibility = Visibility.Hidden;
+            AuthorImageGrid.Visibility = Visibility.Visible;
+            TagImageGrid.Visibility = Visibility.Collapsed;
+            ReplaceImageGrid.Visibility = Visibility.Collapsed;
+            MoveImageGrid.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowTagImageGridOption_Checked(object sender, RoutedEventArgs e)
+        {
+            AllImageGrid.Visibility = Visibility.Collapsed;
+            AuthorImageGrid.Visibility = Visibility.Collapsed;
+            TagImageGrid.Visibility = Visibility.Visible;
+            ReplaceImageGrid.Visibility = Visibility.Collapsed;
+            MoveImageGrid.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowReplaceImageGridOption_Checked(object sender, RoutedEventArgs e)
+        {
+            AllImageGrid.Visibility = Visibility.Visible;
+            AuthorImageGrid.Visibility = Visibility.Collapsed;
+            TagImageGrid.Visibility = Visibility.Collapsed;
+            ReplaceImageGrid.Visibility = Visibility.Visible;
+            MoveImageGrid.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowMoveImageGridOption_Checked(object sender, RoutedEventArgs e)
+        {
+            AllImageGrid.Visibility = Visibility.Collapsed;
+            AuthorImageGrid.Visibility = Visibility.Collapsed;
+            TagImageGrid.Visibility = Visibility.Collapsed;
+            ReplaceImageGrid.Visibility = Visibility.Collapsed;
+            MoveImageGrid.Visibility = Visibility.Visible;
+        }
+
+        private void ShowAuthorMenuOption_Checked(object sender, RoutedEventArgs e)
+        {
+            AuthorContainer.Visibility = Visibility.Visible;
+            //TagContainer.Visibility = Visibility.Collapsed;
+            MoveContainer.Visibility = Visibility.Collapsed;
+            ReplaceContainer.Visibility = Visibility.Collapsed;       
+            UpdateAuthorsList();
+        }
+
+        private void ShowTagMenuOption_Checked(object sender, RoutedEventArgs e)
+        {
+            AuthorContainer.Visibility = Visibility.Collapsed;
+            //TagContainer.Visibility = Visibility.Visible;
+            MoveContainer.Visibility = Visibility.Collapsed;
+            ReplaceContainer.Visibility = Visibility.Collapsed;           
+            UpdateAuthorsList();
+        }
+
+        private void ShowReplaceMenuOption_Checked(object sender, RoutedEventArgs e)
+        {
+            AuthorContainer.Visibility = Visibility.Collapsed;
+            //TagContainer.Visibility = Visibility.Collapsed;        
+            ReplaceContainer.Visibility = Visibility.Visible;
+            MoveContainer.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowMoveMenuOption_Checked(object sender, RoutedEventArgs e)
+        {
+            AuthorContainer.Visibility = Visibility.Collapsed;
+            //TagContainer.Visibility = Visibility.Collapsed;         
+            ReplaceContainer.Visibility = Visibility.Collapsed;
+            MoveContainer.Visibility = Visibility.Visible;
         }
         #endregion
 
@@ -122,18 +225,26 @@ namespace Reviser
         {
             await LoadTable(true);
         }
-        private void SwapX_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+
+        private void CleanEverything_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (MoveGrid.Visibility == Visibility.Visible)
-            {
-                MoveGrid.Visibility = Visibility.Hidden;
-                ReplaceGrid.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                MoveGrid.Visibility = Visibility.Visible;
-                ReplaceGrid.Visibility = Visibility.Hidden;
-            }
+            allImageItems.Clear();
+            authorImageItems.Clear();
+            tagImageItems.Clear();
+            ImageNameMoveFiles.Clear();
+            ImageNameReplaceFiles.Clear();
+
+            AllImageGrid.Items.Refresh();
+            AuthorImageGrid.Items.Refresh();
+            TagImageGrid.Items.Refresh();
+            MoveImageGrid.Items.Refresh();
+            ReplaceImageGrid.Items.Refresh();
+
+            authorStatistics.Clear();
+            AuthorsWrapPanel.Children.Clear();
+
+            Count.Text = "Всего: 0";
+            ClearImagePreview();
         }
 
         private void Cancel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -153,8 +264,12 @@ namespace Reviser
             if (success == true)
             {
                 directoryPath = Path.GetDirectoryName(fileDialog.FileName);
-                ImageInfoItems.Clear();
+                allImageItems.Clear();
+                authorImageItems.Clear();
+                authorStatistics.Clear();
+
                 ClearPreviewOnFolderChange();
+                SelectedFolder.Text = directoryPath;
             }
 
             SelectedFolder.Text = directoryPath;
@@ -168,14 +283,23 @@ namespace Reviser
                 return;
             }
 
+            allImageItems.Clear();
+            authorImageItems.Clear();
+
             // Создаем новый токен отмены
             cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
             // Показываем кнопку отмены
             LoadFullTable.IsEnabled = false;
-
             Cancel.Visibility = Visibility.Visible;
+
+            await Dispatcher.InvokeAsync(() =>
+            {
+                // Принудительно обновляем привязку данных
+                AllImageGrid.Items.Refresh();
+                AuthorImageGrid.Items.Refresh();
+            });
 
             try
             {
@@ -216,7 +340,8 @@ namespace Reviser
                 filePaths.AddRange(Directory.GetFiles(searchFolder, $"*.{filter}", searchOption));
             }
 
-            ImageInfoItems.Clear();
+            allImageItems.Clear();
+            authorStatistics.Clear();
 
             // Обрабатываем файлы с поддержкой отмены
             for (int i = 0; i < filePaths.Count; i++)
@@ -226,11 +351,14 @@ namespace Reviser
                 var path = filePaths[i];
                 var item = await Task.Run(() => SetImageInfo(path, i + 1, isFullLoad, cancellationToken), cancellationToken);
 
+                // Обновляем статистику авторов
+                UpdateAuthorStatistics(item);
+
                 // Обновляем UI в основном потоке
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    ImageInfoItems.Add(item);
-                    Count.Text = "Всего: " + ImageInfoItems.Count.ToString();
+                    allImageItems.Add(item);
+                    Count.Text = "Всего: " + allImageItems.Count.ToString();
                 });
 
                 // Небольшая пауза для плавности с проверкой отмены
@@ -257,6 +385,8 @@ namespace Reviser
                     string format = image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Jpeg) ? "JPG" :
                                     image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Png) ? "PNG" :
                                     image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Gif) ? "GIF" : "Unknown";
+                    
+                    var partsOfImageName = PartsOfImageName.ParseImageNameIntoParts(fileName);
 
                     return new ImageInfoItem
                     {
@@ -266,7 +396,12 @@ namespace Reviser
                         Resolution = $"{width}x{height}",
                         AspectRatio = (height / (double)width).ToString("F3"),
                         FileSize = FormatFileSize(fileInfo.Length),
-                        Format = format
+                        Format = format,
+                        Character = partsOfImageName.Character,
+                        Author = partsOfImageName.Author,
+                        Class = partsOfImageName.Class,
+                        Number = partsOfImageName.Number,
+                        Tags = partsOfImageName.Tags
                     };
                 }
             }
@@ -286,29 +421,104 @@ namespace Reviser
             }
         }
 
-        private static string FormatFileSize(long bytes)
+        private void UpdateAuthorStatistics(ImageInfoItem item)
         {
-            string[] sizes = { "B", "KB", "MB", "GB" };
-            double len = bytes;
-            int order = 0;
-
-            while (len >= 1024 && order < sizes.Length - 1)
+            if (!string.IsNullOrEmpty(item.Author))
             {
-                order++;
-                len /= 1024;
+                if (authorStatistics.ContainsKey(item.Author))
+                {
+                    authorStatistics[item.Author]++;
+                }
+                else
+                {
+                    authorStatistics[item.Author] = 1;
+                }
             }
-            return $"{len:0.##} {sizes[order]}";
+
+            authorsListNeedsUpdate = true;
         }
         #endregion
 
 
 
-        #region Дополнительные кнопки
+        #region Обновление генерируемых кнопок статистики                 
+        private void UpdateAuthorsList()
+        {
+            AuthorsWrapPanel.Children.Clear();
+
+            if (authorStatistics.Count == 0)
+            {
+                NoAuthorText.Visibility = Visibility.Visible;
+                return;
+            }
+            else NoAuthorText.Visibility = Visibility.Collapsed;
+
+            foreach (var author in authorStatistics.OrderByDescending(x => x.Value))
+            {
+                var authorButton = CreateAuthorButton(author.Key, author.Value);
+                AuthorsWrapPanel.Children.Add(authorButton);
+            }
+        }
+
+        private TextBlock CreateAuthorButton(string authorName, int count)
+        {
+            var textButton = new TextBlock
+            {
+                Text = $"{authorName} [{count}]",
+                Margin = new Thickness(5),
+                Padding = new Thickness(5),
+                Background = new SolidColorBrush(Color.FromRgb(221, 223, 233)),
+                FontSize = 13,
+                Cursor = Cursors.Hand,
+                Tag = authorName
+            };
+
+            textButton.MouseLeftButtonDown += AuthorButton_MouseLeftButtonDown;
+            textButton.MouseEnter += (s, e) =>
+            {
+                textButton.Background = new SolidColorBrush(Color.FromRgb(174, 194, 235));
+            };
+            textButton.MouseLeave += (s, e) =>
+            {
+                textButton.Background = new SolidColorBrush(Color.FromRgb(221, 223, 233));
+            };
+
+            return textButton;
+        }
+
+        private void AuthorButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock textButton && textButton.Tag is string authorName)
+            {
+                // Фильтруем изображения по автору
+                authorImageItems.Clear();
+                var filteredItems = allImageItems.Where(item => item.Author == authorName).ToList();
+
+                for (int i = 0; i < filteredItems.Count; i++)
+                {
+                    filteredItems[i].Index = i + 1;
+                    authorImageItems.Add(filteredItems[i]);
+                }
+
+                // Показываем фильтрованную таблицу
+                ShowAuthorImageGridOption_Checked(null, null);
+
+                if (ShowAuthorImageGridOption != null)
+                {
+                    ShowAuthorImageGridOption.IsChecked = true;
+                }
+            }
+        }
+        #endregion
+
+
+
+        #region Дополнительные действия
         private void GetNoAuthor_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var itemsToRemove = new List<ImageInfoItem>();
 
-            foreach (var item in ImageInfoItems)
+            foreach (var item in allImageItems)
             {
                 string fileName = item.FileName;
 
@@ -336,13 +546,13 @@ namespace Reviser
             // Удаляем ненужные элементы из ObservableCollection
             foreach (var item in itemsToRemove)
             {
-                ImageInfoItems.Remove(item);
+                allImageItems.Remove(item);
             }
 
             // Переиндексируем оставшиеся элементы
-            for (int i = 0; i < ImageInfoItems.Count; i++)
+            for (int i = 0; i < allImageItems.Count; i++)
             {
-                ImageInfoItems[i].Index = i + 1;
+                allImageItems[i].Index = i + 1;
             }
         }
 
@@ -354,7 +564,7 @@ namespace Reviser
                 return;
             }
 
-            if (ImageInfoItems.Count == 0)
+            if (allImageItems.Count == 0)
             {
                 MessageBox.Show("Сначала загрузите таблицу изображений", "Информация",
                                MessageBoxButton.OK, MessageBoxImage.Information);
@@ -374,7 +584,7 @@ namespace Reviser
             int errorCount = 0;
             int alreadySortedCount = 0;
 
-            foreach (var item in ImageInfoItems)
+            foreach (var item in allImageItems)
             {
                 try
                 {
@@ -628,9 +838,23 @@ namespace Reviser
 
         #region Превью изображений
         [Obsolete]
-        private async void ImageGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private async void AllImageGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            var selectedItem = ImageGrid.SelectedItem as ImageInfoItem;
+            var selectedItem = AllImageGrid.SelectedItem as ImageInfoItem;
+            if (selectedItem != null && !string.IsNullOrEmpty(directoryPath))
+            {
+                await LoadImagePreview(selectedItem);
+            }
+            else
+            {
+                ClearImagePreview();
+            }
+        }
+
+        [Obsolete]
+        private async void AuthorImageGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            var selectedItem = AuthorImageGrid.SelectedItem as ImageInfoItem;
             if (selectedItem != null && !string.IsNullOrEmpty(directoryPath))
             {
                 await LoadImagePreview(selectedItem);
@@ -785,13 +1009,13 @@ namespace Reviser
         private void ClearPreviewOnFolderChange()
         {
             ClearImagePreview();
-            ImageGrid.SelectedItem = null;
+            AllImageGrid.SelectedItem = null;
         }
 
         [Obsolete]
         private void MoveGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            var selectedItem = ImageNameFilesMoveGrid.SelectedItem as ImageNewName;
+            var selectedItem = MoveImageGrid.SelectedItem as ImageNewName;
             if (selectedItem != null)
             {
                 LoadImagePreviewFromPath(selectedItem.OriginalPath, selectedItem.OriginalName);
@@ -805,7 +1029,7 @@ namespace Reviser
         [Obsolete]
         private void ReplaceGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            var selectedItem = ImageNameFilesReplaceGrid.SelectedItem as ImageNewName;
+            var selectedItem = ReplaceImageGrid.SelectedItem as ImageNewName;
             if (selectedItem != null)
             {
                 LoadImagePreviewFromPath(selectedItem.OriginalPath, selectedItem.OriginalName);
@@ -862,13 +1086,21 @@ namespace Reviser
 
 
 
-        #region Обработка правого клика и контекстного меню
-        private void ImageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        #region Обработка двойного клика
+        private void AllImageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var hitTestResult = VisualTreeHelper.HitTest(ImageGrid, e.GetPosition(ImageGrid));
+            var hitTestResult = VisualTreeHelper.HitTest(AllImageGrid, e.GetPosition(AllImageGrid));
             var row = hitTestResult.VisualHit.GetParentOfType<System.Windows.Controls.DataGridRow>();
 
-            OpenImageFromGrid(row, ImageGrid);
+            OpenImageFromGrid(row, AllImageGrid);
+        }
+
+        private void AuthorImageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var hitTestResult = VisualTreeHelper.HitTest(AuthorImageGrid, e.GetPosition(AuthorImageGrid));
+            var row = hitTestResult.VisualHit.GetParentOfType<System.Windows.Controls.DataGridRow>();
+
+            OpenImageFromGrid(row, AuthorImageGrid);
         }
 
         private void OpenImageFromGrid(System.Windows.Controls.DataGridRow row, System.Windows.Controls.DataGrid grid)
@@ -907,7 +1139,27 @@ namespace Reviser
             }
         }
         #endregion
+
+
+
+        #region Вспомогательные
+        private static string FormatFileSize(long bytes)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB" };
+            double len = bytes;
+            int order = 0;
+
+            while (len >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                len /= 1024;
+            }
+            return $"{len:0.##} {sizes[order]}";
+        }
+        #endregion
     }
+
+
 
     public static class VisualTreeHelperExtensions
     {

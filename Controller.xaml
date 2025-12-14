@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignWidth="80" d:DesignHeight="40"
-             Width="{Binding GlobalWidth}" Height="40"
+             Width="{Binding GlobalWidth, RelativeSource={RelativeSource AncestorType=UserControl}}"
+             Height="40"
              Cursor="Hand" FontSize="13"
              FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"      
              HorizontalAlignment="Center" VerticalAlignment="Top"
@@ -18,21 +19,23 @@
         <Rectangle Name="Shadow" 
                    Margin="2,2,0,0"
                    StrokeThickness="1.5"
-                   Fill="{Binding BackColor}"
+                   Fill="{Binding BackColor, RelativeSource={RelativeSource AncestorType=UserControl}}"
                    Stroke="Black"  
-                   Width="{Binding FigurelWidth}" Height="36"
+                   Width="{Binding FigurelWidth, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   Height="36"
                    RadiusX="4" RadiusY="4" />
         
         <Rectangle Name="Figure" 
                    StrokeThickness="1.5"
                    Fill="{Binding BackColor}"
                    Stroke="Black"  
-                   Width="{Binding FigurelWidth}" Height="36"
+                   Width="{Binding FigurelWidth, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   Height="36"
                    RadiusX="4" RadiusY="4" />
 
         <TextBlock Name="CommandText"
-                   Foreground="{Binding TextColor}"
-                   Text="{Binding Command}"        
+                   Foreground="{Binding TextColor, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   Text="{Binding Command, RelativeSource={RelativeSource AncestorType=UserControl}}"        
                    TextAlignment="Center" 
                    VerticalAlignment="Center" />
     </Grid>
