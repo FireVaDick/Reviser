@@ -71,8 +71,8 @@ namespace Reviser
         private ObservableCollection<ImageInfoItem> allImageItems = new ObservableCollection<ImageInfoItem>();
         private ObservableCollection<ImageInfoItem> authorImageItems = new ObservableCollection<ImageInfoItem>();
         private ObservableCollection<ImageInfoItem> tagImageItems = new ObservableCollection<ImageInfoItem>();
-        private ObservableCollection<ImageNewName> ImageNameMoveFiles { get; set; } = new ObservableCollection<ImageNewName>();
-        private ObservableCollection<ImageNewName> ImageNameReplaceFiles { get; set; } = new ObservableCollection<ImageNewName>();
+        private ObservableCollection<ImageNewName> moveImageFiles = new ObservableCollection<ImageNewName>();
+        private ObservableCollection<ImageNewName> replaceImageFiles = new ObservableCollection<ImageNewName>();
 
         private CancellationTokenSource cancellationTokenSource;
         private static string directoryPath;
@@ -92,11 +92,11 @@ namespace Reviser
             this.Left = (SystemParameters.FullPrimaryScreenWidth - this.Width) / 2;
             this.Top = (SystemParameters.FullPrimaryScreenHeight - this.Height) / 2;
 
-            AllImageGrid.ItemsSource = allImageItems;
-            AuthorImageGrid.ItemsSource = authorImageItems;
-            TagImageGrid.ItemsSource = tagImageItems;
-            MoveImageGrid.ItemsSource = ImageNameMoveFiles;
-            ReplaceImageGrid.ItemsSource = ImageNameReplaceFiles;
+            AllDataGrid.ItemsSource = allImageItems;
+            AuthorDataGrid.ItemsSource = authorImageItems;
+            TagDataGrid.ItemsSource = tagImageItems;
+            MoveDataGrid.ItemsSource = moveImageFiles;
+            ReplaceDataGrid.ItemsSource = replaceImageFiles;
 
             authorUpdateTimer = new System.Windows.Threading.DispatcherTimer();
             authorUpdateTimer.Interval = TimeSpan.FromSeconds(2); // Обновление каждые 2 секунды
@@ -108,7 +108,7 @@ namespace Reviser
 
         private void AuthorUpdateTimer_Tick(object sender, EventArgs e)
         {
-            if (authorsListNeedsUpdate && AuthorContainer.Visibility == Visibility.Visible)
+            if (authorsListNeedsUpdate && AuthorActionGrid.Visibility == Visibility.Visible)
             {
                 UpdateAuthorsList();
                 authorsListNeedsUpdate = false;
@@ -132,84 +132,133 @@ namespace Reviser
 
 
 
-        #region Переключатели
-        private void ShowAllImageGridOption_Checked(object sender, RoutedEventArgs e)
+        #region Переключатели ClassGroup
+        private void Class1s_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            AllImageGrid.Visibility = Visibility.Visible;
-            AuthorImageGrid.Visibility = Visibility.Collapsed;
-            TagImageGrid.Visibility = Visibility.Collapsed;
-            ReplaceImageGrid.Visibility = Visibility.Collapsed;
-            MoveImageGrid.Visibility = Visibility.Collapsed;
+
         }
 
-        private void ShowAuthorImageGridOption_Checked(object sender, RoutedEventArgs e)
+        private void Class2e_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            AllImageGrid.Visibility = Visibility.Hidden;
-            AuthorImageGrid.Visibility = Visibility.Visible;
-            TagImageGrid.Visibility = Visibility.Collapsed;
-            ReplaceImageGrid.Visibility = Visibility.Collapsed;
-            MoveImageGrid.Visibility = Visibility.Collapsed;
+
         }
 
-        private void ShowTagImageGridOption_Checked(object sender, RoutedEventArgs e)
+        private void Class3n_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            AllImageGrid.Visibility = Visibility.Collapsed;
-            AuthorImageGrid.Visibility = Visibility.Collapsed;
-            TagImageGrid.Visibility = Visibility.Visible;
-            ReplaceImageGrid.Visibility = Visibility.Collapsed;
-            MoveImageGrid.Visibility = Visibility.Collapsed;
+
         }
 
-        private void ShowReplaceImageGridOption_Checked(object sender, RoutedEventArgs e)
+        private void Class4c_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            AllImageGrid.Visibility = Visibility.Visible;
-            AuthorImageGrid.Visibility = Visibility.Collapsed;
-            TagImageGrid.Visibility = Visibility.Collapsed;
-            ReplaceImageGrid.Visibility = Visibility.Visible;
-            MoveImageGrid.Visibility = Visibility.Collapsed;
+
         }
 
-        private void ShowMoveImageGridOption_Checked(object sender, RoutedEventArgs e)
+        private void Class5j_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            AllImageGrid.Visibility = Visibility.Collapsed;
-            AuthorImageGrid.Visibility = Visibility.Collapsed;
-            TagImageGrid.Visibility = Visibility.Collapsed;
-            ReplaceImageGrid.Visibility = Visibility.Collapsed;
-            MoveImageGrid.Visibility = Visibility.Visible;
+
         }
 
-        private void ShowAuthorMenuOption_Checked(object sender, RoutedEventArgs e)
+        private void Class6h_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            AuthorContainer.Visibility = Visibility.Visible;
-            //TagContainer.Visibility = Visibility.Collapsed;
-            MoveContainer.Visibility = Visibility.Collapsed;
-            ReplaceContainer.Visibility = Visibility.Collapsed;       
+
+        }
+        #endregion
+
+
+
+        #region Переключатели DataGroup
+        private void ShowCurrentDataGrid(DataGrid dataGridToShow)
+        {
+            var allGrids = new List<DataGrid>
+            {
+                AllDataGrid,
+                AuthorDataGrid,
+                TagDataGrid,
+                ReplaceDataGrid,
+                MoveDataGrid
+            };
+
+            foreach (var grid in allGrids)
+            {
+                grid.Visibility = Visibility.Collapsed;
+            }
+
+            if (dataGridToShow != null)
+            {
+                dataGridToShow.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void ShowAllDataGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ShowCurrentDataGrid(AllDataGrid);
+        }
+
+        private void ShowAuthorDataGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ShowCurrentDataGrid(AuthorDataGrid);
+        }
+
+        private void ShowTagDataGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ShowCurrentDataGrid(TagDataGrid);
+        }
+
+        private void ShowReplaceDataGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ShowCurrentDataGrid(ReplaceDataGrid);
+        }
+
+        private void ShowMoveDataGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ShowCurrentDataGrid(MoveDataGrid);
+        }
+        #endregion
+
+
+
+        #region Переключатели ActionGroup
+        private void ShowCurrentActionGrid(Grid actionGridToShow)
+        {
+            var allGrids = new List<Grid>
+            {
+                AuthorActionGrid,
+                //TagActionGrid,
+                ReplaceActionGrid,
+                MoveActionGrid
+            };
+
+            foreach (var grid in allGrids)
+            {
+                grid.Visibility = Visibility.Collapsed;
+            }
+
+            if (actionGridToShow != null)
+            {
+                actionGridToShow.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void ShowAuthorActionGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ShowCurrentActionGrid(AuthorActionGrid);
             UpdateAuthorsList();
         }
 
-        private void ShowTagMenuOption_Checked(object sender, RoutedEventArgs e)
+        private void ShowTagActionGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            AuthorContainer.Visibility = Visibility.Collapsed;
-            //TagContainer.Visibility = Visibility.Visible;
-            MoveContainer.Visibility = Visibility.Collapsed;
-            ReplaceContainer.Visibility = Visibility.Collapsed;           
+            //ShowCurrentActionGrid(TagActionGrid);
             UpdateAuthorsList();
         }
 
-        private void ShowReplaceMenuOption_Checked(object sender, RoutedEventArgs e)
+        private void ShowReplaceActionGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            AuthorContainer.Visibility = Visibility.Collapsed;
-            //TagContainer.Visibility = Visibility.Collapsed;        
-            ReplaceContainer.Visibility = Visibility.Visible;
-            MoveContainer.Visibility = Visibility.Collapsed;
+            ShowCurrentActionGrid(ReplaceActionGrid);
         }
 
-        private void ShowMoveMenuOption_Checked(object sender, RoutedEventArgs e)
+        private void ShowMoveActionGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            AuthorContainer.Visibility = Visibility.Collapsed;
-            //TagContainer.Visibility = Visibility.Collapsed;         
-            ReplaceContainer.Visibility = Visibility.Collapsed;
-            MoveContainer.Visibility = Visibility.Visible;
+            ShowCurrentActionGrid(MoveActionGrid);
         }
         #endregion
 
@@ -231,14 +280,14 @@ namespace Reviser
             allImageItems.Clear();
             authorImageItems.Clear();
             tagImageItems.Clear();
-            ImageNameMoveFiles.Clear();
-            ImageNameReplaceFiles.Clear();
+            moveImageFiles.Clear();
+            replaceImageFiles.Clear();
 
-            AllImageGrid.Items.Refresh();
-            AuthorImageGrid.Items.Refresh();
-            TagImageGrid.Items.Refresh();
-            MoveImageGrid.Items.Refresh();
-            ReplaceImageGrid.Items.Refresh();
+            AllDataGrid.Items.Refresh();
+            AuthorDataGrid.Items.Refresh();
+            TagDataGrid.Items.Refresh();
+            MoveDataGrid.Items.Refresh();
+            ReplaceDataGrid.Items.Refresh();
 
             authorStatistics.Clear();
             AuthorsWrapPanel.Children.Clear();
@@ -297,8 +346,8 @@ namespace Reviser
             await Dispatcher.InvokeAsync(() =>
             {
                 // Принудительно обновляем привязку данных
-                AllImageGrid.Items.Refresh();
-                AuthorImageGrid.Items.Refresh();
+                AllDataGrid.Items.Refresh();
+                AuthorDataGrid.Items.Refresh();
             });
 
             try
@@ -332,12 +381,12 @@ namespace Reviser
         {
             string[] filters = new string[] { "jpg", "jpeg", "png", "gif" };
             var filePaths = new List<string>();
-            var searchOption = isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            var searchOneMenuOption = isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
             foreach (var filter in filters)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                filePaths.AddRange(Directory.GetFiles(searchFolder, $"*.{filter}", searchOption));
+                filePaths.AddRange(Directory.GetFiles(searchFolder, $"*.{filter}", searchOneMenuOption));
             }
 
             allImageItems.Clear();
@@ -490,7 +539,6 @@ namespace Reviser
         {
             if (sender is TextBlock textButton && textButton.Tag is string authorName)
             {
-                // Фильтруем изображения по автору
                 authorImageItems.Clear();
                 var filteredItems = allImageItems.Where(item => item.Author == authorName).ToList();
 
@@ -500,13 +548,7 @@ namespace Reviser
                     authorImageItems.Add(filteredItems[i]);
                 }
 
-                // Показываем фильтрованную таблицу
-                ShowAuthorImageGridOption_Checked(null, null);
-
-                if (ShowAuthorImageGridOption != null)
-                {
-                    ShowAuthorImageGridOption.IsChecked = true;
-                }
+                ShowCurrentDataGrid(AuthorDataGrid);
             }
         }
         #endregion
@@ -748,7 +790,7 @@ namespace Reviser
         private async void PreviewMove_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             // Загружаем и парсим асинхронно
-            var items = await LoadImageNameFilesAsync(ImageNameMoveFiles);
+            var items = await LoadImageNameFilesAsync(moveImageFiles);
 
             // Применяем шаблон (быстро, можно в UI)
             foreach (var item in items)
@@ -757,16 +799,16 @@ namespace Reviser
             }
 
             // Обновляем UI
-            ImageNameMoveFiles.Clear();
+            moveImageFiles.Clear();
             foreach (var item in items)
             {
-                ImageNameMoveFiles.Add(item);
+                moveImageFiles.Add(item);
             }
         }
 
         private void RenameMove_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            RenameSave(ImageNameMoveFiles);
+            RenameSave(moveImageFiles);
         }
         #endregion
 
@@ -775,7 +817,7 @@ namespace Reviser
         #region Замена (Replace)
         private async void PreviewReplace_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var items = await LoadImageNameFilesAsync(ImageNameReplaceFiles);
+            var items = await LoadImageNameFilesAsync(replaceImageFiles);
 
             string findText = FindTextBox?.Text?.Trim();
             string replaceText = ReplaceTextBox?.Text?.Trim();
@@ -820,27 +862,27 @@ namespace Reviser
                 });
 
                 // Обновляем UI
-                ImageNameReplaceFiles.Clear();
+                replaceImageFiles.Clear();
                 foreach (var item in filteredList)
                 {
-                    ImageNameReplaceFiles.Add(item);
+                    replaceImageFiles.Add(item);
                 }
             }
         }
 
         private void RenameReplace_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            RenameSave(ImageNameReplaceFiles);
+            RenameSave(replaceImageFiles);
         }
         #endregion
 
 
 
-        #region Превью изображений
+        #region Обработка превью изображений
         [Obsolete]
-        private async void AllImageGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private async void AllDataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            var selectedItem = AllImageGrid.SelectedItem as ImageInfoItem;
+            var selectedItem = AllDataGrid.SelectedItem as ImageInfoItem;
             if (selectedItem != null && !string.IsNullOrEmpty(directoryPath))
             {
                 await LoadImagePreview(selectedItem);
@@ -852,9 +894,9 @@ namespace Reviser
         }
 
         [Obsolete]
-        private async void AuthorImageGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private async void AuthorDataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            var selectedItem = AuthorImageGrid.SelectedItem as ImageInfoItem;
+            var selectedItem = AuthorDataGrid.SelectedItem as ImageInfoItem;
             if (selectedItem != null && !string.IsNullOrEmpty(directoryPath))
             {
                 await LoadImagePreview(selectedItem);
@@ -1009,13 +1051,13 @@ namespace Reviser
         private void ClearPreviewOnFolderChange()
         {
             ClearImagePreview();
-            AllImageGrid.SelectedItem = null;
+            AllDataGrid.SelectedItem = null;
         }
 
         [Obsolete]
         private void MoveGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            var selectedItem = MoveImageGrid.SelectedItem as ImageNewName;
+            var selectedItem = MoveDataGrid.SelectedItem as ImageNewName;
             if (selectedItem != null)
             {
                 LoadImagePreviewFromPath(selectedItem.OriginalPath, selectedItem.OriginalName);
@@ -1029,7 +1071,7 @@ namespace Reviser
         [Obsolete]
         private void ReplaceGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            var selectedItem = ReplaceImageGrid.SelectedItem as ImageNewName;
+            var selectedItem = ReplaceDataGrid.SelectedItem as ImageNewName;
             if (selectedItem != null)
             {
                 LoadImagePreviewFromPath(selectedItem.OriginalPath, selectedItem.OriginalName);
@@ -1087,20 +1129,20 @@ namespace Reviser
 
 
         #region Обработка двойного клика
-        private void AllImageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void AllDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var hitTestResult = VisualTreeHelper.HitTest(AllImageGrid, e.GetPosition(AllImageGrid));
+            var hitTestResult = VisualTreeHelper.HitTest(AllDataGrid, e.GetPosition(AllDataGrid));
             var row = hitTestResult.VisualHit.GetParentOfType<System.Windows.Controls.DataGridRow>();
 
-            OpenImageFromGrid(row, AllImageGrid);
+            OpenImageFromGrid(row, AllDataGrid);
         }
 
-        private void AuthorImageGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void AuthorDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var hitTestResult = VisualTreeHelper.HitTest(AuthorImageGrid, e.GetPosition(AuthorImageGrid));
+            var hitTestResult = VisualTreeHelper.HitTest(AuthorDataGrid, e.GetPosition(AuthorDataGrid));
             var row = hitTestResult.VisualHit.GetParentOfType<System.Windows.Controls.DataGridRow>();
 
-            OpenImageFromGrid(row, AuthorImageGrid);
+            OpenImageFromGrid(row, AuthorDataGrid);
         }
 
         private void OpenImageFromGrid(System.Windows.Controls.DataGridRow row, System.Windows.Controls.DataGrid grid)
@@ -1161,6 +1203,7 @@ namespace Reviser
 
 
 
+    #region Другое
     public static class VisualTreeHelperExtensions
     {
         public static T GetParentOfType<T>(this DependencyObject child) where T : DependencyObject
@@ -1176,4 +1219,5 @@ namespace Reviser
             return parent.GetParentOfType<T>();
         }
     }
+    #endregion
 }

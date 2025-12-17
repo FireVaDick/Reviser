@@ -7,39 +7,23 @@ namespace Reviser
     public partial class Controller : UserControl
     {
         #region Свойства
-        public static readonly DependencyProperty GlobalWidthProperty = DependencyProperty.Register("GlobalWidth", typeof(double), typeof(Controller), new PropertyMetadata(null));
-        public static readonly DependencyProperty FigureWidthProperty = DependencyProperty.Register("FigurelWidth", typeof(double), typeof(Controller), new PropertyMetadata(null));
-        public static readonly DependencyProperty BackColorProperty = DependencyProperty.Register("BackColor", typeof(Brush), typeof(Controller), new PropertyMetadata(null));
-        public static readonly DependencyProperty StartColorProperty = DependencyProperty.Register("StartColor", typeof(Brush), typeof(Controller), new PropertyMetadata(null));
+        public static readonly DependencyProperty BackColorProperty = DependencyProperty.Register("BackColor", typeof(Brush), typeof(Controller), new PropertyMetadata(Brushes.White));
+        public static readonly DependencyProperty StartColorProperty = DependencyProperty.Register("StartColor", typeof(Brush), typeof(Controller), new PropertyMetadata(Brushes.White));
         public static readonly DependencyProperty HoverColorProperty = DependencyProperty.Register("HoverColor", typeof(Brush), typeof(Controller), new PropertyMetadata(null));
-        public static readonly DependencyProperty TextColorProperty = DependencyProperty.Register("TextColor", typeof(Brush), typeof(Controller), new PropertyMetadata(null));
+        public static readonly DependencyProperty TextColorProperty = DependencyProperty.Register("TextColor", typeof(Brush), typeof(Controller), new PropertyMetadata(Brushes.Black));
         public static readonly DependencyProperty CommandProperty = DependencyProperty.Register("Command", typeof(string), typeof(Controller), new PropertyMetadata(null));
         public static readonly DependencyProperty PurposeProperty = DependencyProperty.Register("Purpose", typeof(string), typeof(Controller), new PropertyMetadata(null));
-
-        public double GlobalWidth
-        {
-            get { return (double)GetValue(GlobalWidthProperty); }
-            set { SetValue(GlobalWidthProperty, value); }
-        }
-
-        public double FigureWidth
-        {
-            get { return (double)GetValue(FigureWidthProperty); }
-            set { SetValue(FigureWidthProperty, value); }
-        }
 
         public Brush BackColor
         {
             get { return (Brush)GetValue(BackColorProperty); }
             set { SetValue(BackColorProperty, value); }
         }
-
         public Brush StartColor
         {
             get { return (Brush)GetValue(StartColorProperty); }
             set { SetValue(StartColorProperty, value); }
         }
-
         public Brush HoverColor
         {
             get { return (Brush)GetValue(HoverColorProperty); }
@@ -49,19 +33,16 @@ namespace Reviser
                 Controller_MouseEnter(this, null);
             }
         }
-
         public Brush TextColor
         {
             get { return (Brush)GetValue(TextColorProperty); }
             set { SetValue(TextColorProperty, value); }
         }
-
         public string Command
         {
             get { return (string)GetValue(CommandProperty); }
             set { SetValue(CommandProperty, value); }
         }
-
         public string Purpose
         {
             get { return (string)GetValue(PurposeProperty); }
@@ -71,13 +52,11 @@ namespace Reviser
 
 
 
+        #region Конструктор
         public Controller()
         {
             InitializeComponent();
             DataContext = this;
-
-            TextColor = Brushes.Black;
-            BackColor = StartColor = Brushes.White;
         }
 
         public Controller(string title)
@@ -86,13 +65,12 @@ namespace Reviser
             DataContext = this;
 
             Command = title;
-            GlobalWidth = 140;
-            FigureWidth = 136; 
-
-            TextColor = Brushes.Black;
-            BackColor = StartColor = Brushes.White;
         }
+        #endregion
 
+
+
+        #region Действия мыши
         private void Controller_Loaded(object sender, RoutedEventArgs e)
         {
             switch (Purpose)
@@ -150,5 +128,6 @@ namespace Reviser
 
             ((Controller)sender).Figure.Visibility = Visibility.Visible;
         }
+        #endregion
     }
 }

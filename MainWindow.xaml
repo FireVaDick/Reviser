@@ -13,8 +13,54 @@
         FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"      
         Background="#dddfe9"
         KeyDown="MainWindow_KeyDown">
+    <Window.Resources>
+        <Style x:Key="ImageDataGridStyle" TargetType="DataGrid">
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="RowDetailsVisibilityMode" Value="Collapsed"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="MinRowHeight" Value="22"/>
+            <Setter Property="Background" Value="#fff"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#1c2541"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#1c2541"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="False"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontFamily" Value="pack://application:,,,/Fonts/#v_DistrictTF-Regular"/>
+        </Style>
+
+        <Style x:Key="ImageDataGridRowStyle" TargetType="DataGridRow">
+            <Setter Property="Background" Value="#e9ebf5"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding BackColor}" Value="#001">
+                    <Setter Property="Background" Value="#EBEBEB"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding BackColor}" Value="#002">
+                    <Setter Property="Background" Value="#9CFF98"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding BackColor}" Value="#003">
+                    <Setter Property="Background" Value="#FFFB83"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding BackColor}" Value="#004">
+                    <Setter Property="Background" Value="#FCB5D7"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding BackColor}" Value="#005">
+                    <Setter Property="Background" Value="#F8B079"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding BackColor}" Value="#006">
+                    <Setter Property="Background" Value="#EC6A7A"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <SolidColorBrush x:Key="DataGridHighlightBrush" Color="#87ABF4"/>
+        <SolidColorBrush x:Key="DataGridInactiveSelectionHighlightBrush" Color="#AEC2EB"/>
+        <SolidColorBrush x:Key="DataGridHighlightTextBrush" Color="Black"/>
+        <SolidColorBrush x:Key="DataGridInactiveSelectionHighlightTextBrush" Color="Black"/>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -25,621 +71,111 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-
-
-        <!-- Столбик ImagePreview -->
-        <Border Grid.Row="0" Grid.Column="0"
-                Margin="15,15,0,10"
-                Background="#fff"
-                BorderBrush="black"
-                BorderThickness="1.8"
-                CornerRadius="10">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- Заголовок -->
-                <TextBlock Text="Превью изображения"
-                          Grid.Row="0"
-                          Foreground="Black"
-                          HorizontalAlignment="Center"
-                          Margin="10,10,10,0"/>
-
-                <!-- Область изображения -->
-                <Border Grid.Row="1"
-                        Margin="10"
-                        Background="#f8f9fa"
-                        BorderBrush="#dee2e6"
-                        BorderThickness="1.8"
-                        CornerRadius="10">
-                    <Viewbox Margin="10"
-                             Stretch="Uniform" 
-                             MaxWidth="600" 
-                             MaxHeight="800">
-                        <Image x:Name="PreviewImage"
-                               Source="{Binding PreviewImageSource}"
-                               Stretch="Uniform"/>
-                    </Viewbox>
-                </Border>
-
-                <!-- Информация о изображении -->
-                <StackPanel Grid.Row="2" Margin="15,0,10,15">
-                    <TextBlock x:Name="PreviewFileName"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,5"/>
-                    <TextBlock x:Name="PreviewResolution"
-                               FontSize="12"
-                               Foreground="#666"/>
-                    <TextBlock x:Name="PreviewFileSize"
-                               FontSize="12"
-                               Foreground="#666"/>
-                    <TextBlock x:Name="PreviewFormat"
-                               FontSize="12"
-                               Foreground="#666"/>
-                </StackPanel>
-
-                <!-- Сообщение когда нет выбора -->
-                <TextBlock x:Name="NoPreviewText"
-                           Grid.Row="1"
-                           Text="Выберите изображение для просмотра"
-                           TextWrapping="Wrap"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           TextAlignment="Center"
-                           Foreground="#999"
-                           FontStyle="Italic"
-                           Visibility="Visible"/>
-            </Grid>
-        </Border>
-
-
-
-        <!-- Столбик с таблицами -->
-        <Grid Grid.Row="0" Grid.Column="1" 
-              Margin="15,15,15,10">
+      
+        <!-- Левый столбик фото -->
+        <Grid Grid.Row="1" Grid.Column="0"
+              Margin="15,15,0,10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Панель управления таблицами -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                <local:Option x:Name="ShowAllImageGridOption"
-                              GroupName="GridGroup"
-                              IsChecked="True"
-                              Command="Все изображения"
-                              Checked="ShowAllImageGridOption_Checked" />
+            <StackPanel Grid.Row="0" 
+                        Margin="0,0,0,10"
+                        Orientation="Horizontal" >
+                <local:AnyMenuOption x:Name="Class1s"
+                                     GroupName="ClassGroup"
+                                     Command="1s"
+                                     ClickedColor="#EBEBEB"
+                                     MouseLeftButtonDown="Class1s_MouseLeftButtonDown" />
 
-                <local:Option x:Name="ShowAuthorImageGridOption"
-                              GroupName="GridGroup"
-                              Command="По авторам"
-                              Checked="ShowAuthorImageGridOption_Checked" />
+                <local:AnyMenuOption x:Name="Class2e"
+                                     GroupName="ClassGroup"
+                                     Command="2e"
+                                     ClickedColor="#9CFF98"
+                                     MouseLeftButtonDown="Class2e_MouseLeftButtonDown" />
 
-                <local:Option x:Name="ShowTagImageGridOption"
-                              GroupName="GridGroup"
-                              Command="По тегам"
-                              Checked="ShowTagImageGridOption_Checked" />
+                <local:AnyMenuOption x:Name="Class3n"
+                                     GroupName="ClassGroup"
+                                     Command="3n"
+                                     ClickedColor="#FFFB83"
+                                     MouseLeftButtonDown="Class3n_MouseLeftButtonDown" />
 
-                <local:Option x:Name="ShowReplaceImageGridOption"
-                              GroupName="GridGroup"
-                              Command="При замене"
-                              Checked="ShowReplaceImageGridOption_Checked" />
+                <local:AnyMenuOption x:Name="Class4c"
+                                     GroupName="ClassGroup"
+                                     Command="4c"
+                                     ClickedColor="#FCB5D7"
+                                     MouseLeftButtonDown="Class4c_MouseLeftButtonDown" />
 
-                <local:Option x:Name="ShowMoveImageGridOption"
-                              GroupName="GridGroup"
-                              Command="При перестановке"
-                              Checked="ShowMoveImageGridOption_Checked" />
+                <local:AnyMenuOption x:Name="Class5j"
+                                     GroupName="ClassGroup"
+                                     Command="5j"
+                                     ClickedColor="#F8B079"
+                                     MouseLeftButtonDown="Class5j_MouseLeftButtonDown" />
+
+                <local:AnyMenuOption x:Name="Class6h"
+                                     GroupName="ClassGroup"
+                                     Command="6h"
+                                     ClickedColor="#EC6A7A"
+                                     MouseLeftButtonDown="Class6h_MouseLeftButtonDown" />
             </StackPanel>
 
-            <DataGrid x:Name="AllImageGrid"
-                      Grid.Row="1"
-                      Visibility="Visible"
-                      IsReadOnly="True"
-                      RowDetailsVisibilityMode="Collapsed"
-                      AutoGenerateColumns="False"
-                      MinRowHeight="22"           
-                      Background="#fff"
-                      VerticalGridLinesBrush="#1c2541"
-                      HorizontalGridLinesBrush="#1c2541"
-                      VerticalAlignment="Stretch"
-                      VirtualizingStackPanel.IsVirtualizing="False"
-                      FontSize="16"
-                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"
-                      MouseDoubleClick="AllImageGrid_MouseDoubleClick"
-                      SelectionChanged="AllImageGrid_SelectionChanged">
-                <DataGrid.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
-                                     Color="#87ABF4"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
-                                     Color="#AEC2EB"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" 
-                                     Color="Black"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" 
-                                     Color="Black"/>
-                </DataGrid.Resources>
-
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding Index}" 
-                                        Header="Ном." 
-                                        Width="55"/>
-                    <DataGridTextColumn Binding="{Binding FileName}" 
-                                        Header="Имя"
-                                        Width="*"/>
-                    <DataGridTextColumn Binding="{Binding Resolution}"
-                                        Header="Разрешен."
-                                        Width="100"/>
-
-                    <DataGridTemplateColumn Header="" Width="30" IsReadOnly="True">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <!-- Минималистичный индикатор -->
-                                <Border Width="20" Height="20" 
-                                        VerticalAlignment="Center"
-                                        HorizontalAlignment="Center">
-                                    <Border Background="#1c2541" 
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Width="{Binding IndicatorWidth}"
-                                            Height="{Binding IndicatorHeight}"/>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-                    <DataGridTextColumn Binding="{Binding AspectRatio}"
-                                    Header="Соотнош." 
-                                    Width="90"/>
-                    <DataGridTextColumn Binding="{Binding FileSize}"
-                                    Header="Размер" 
-                                    Width="90"/>
-                    <DataGridTextColumn Binding="{Binding Format}"
-                                    Header="Формат"
-                                    Width="90"/>
-                </DataGrid.Columns>
-
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="#e9ebf5"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#001">
-                                <Setter Property="Background" Value="#EBEBEB"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#002">
-                                <Setter Property="Background" Value="#9CFF98"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#003">
-                                <Setter Property="Background" Value="#FFFB83"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#004">
-                                <Setter Property="Background" Value="#FCB5D7"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#005">
-                                <Setter Property="Background" Value="#F8B079"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#006">
-                                <Setter Property="Background" Value="#EC6A7A"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
-
-            <DataGrid x:Name="AuthorImageGrid"
-                    Grid.Row="1"
-                    Visibility="Collapsed"  
-                    IsReadOnly="True"
-                    RowDetailsVisibilityMode="Collapsed"
-                    AutoGenerateColumns="False"
-                    MinRowHeight="22"           
-                    Background="#fff"
-                    VerticalGridLinesBrush="#1c2541"
-                    HorizontalGridLinesBrush="#1c2541"
-                    VerticalAlignment="Stretch"
-                    VirtualizingStackPanel.IsVirtualizing="False"
-                    FontSize="16"
-                    FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"
-                    MouseDoubleClick="AuthorImageGrid_MouseDoubleClick"
-                    SelectionChanged="AuthorImageGrid_SelectionChanged">
-                <DataGrid.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
-                                   Color="#87ABF4"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
-                                   Color="#AEC2EB"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" 
-                                   Color="Black"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" 
-                                   Color="Black"/>
-                </DataGrid.Resources>
-
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding Index}" 
-                                      Header="Ном." 
-                                      Width="55"/>
-                    <DataGridTextColumn Binding="{Binding FileName}" 
-                                      Header="Имя"
-                                      Width="*"/>
-                    <DataGridTextColumn Binding="{Binding Resolution}"
-                                      Header="Разрешен."
-                                      Width="100"/>
-
-                    <DataGridTemplateColumn Header="" Width="30" IsReadOnly="True">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <!-- Минималистичный индикатор -->
-                                <Border Width="20" Height="20" 
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center">
-                                    <Border Background="#1c2541" 
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Width="{Binding IndicatorWidth}"
-                                          Height="{Binding IndicatorHeight}"/>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-                    <DataGridTextColumn Binding="{Binding AspectRatio}"
-                                  Header="Соотнош." 
-                                  Width="90"/>
-                    <DataGridTextColumn Binding="{Binding FileSize}"
-                                  Header="Размер" 
-                                  Width="90"/>
-                    <DataGridTextColumn Binding="{Binding Format}"
-                                  Header="Формат"
-                                  Width="90"/>
-                </DataGrid.Columns>
-
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="#e9ebf5"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#001">
-                                <Setter Property="Background" Value="#EBEBEB"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#002">
-                                <Setter Property="Background" Value="#9CFF98"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#003">
-                                <Setter Property="Background" Value="#FFFB83"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#004">
-                                <Setter Property="Background" Value="#FCB5D7"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#005">
-                                <Setter Property="Background" Value="#F8B079"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#006">
-                                <Setter Property="Background" Value="#EC6A7A"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
-
-            <DataGrid x:Name="TagImageGrid"
-                    Grid.Row="1"
-                    Visibility="Collapsed"  
-                    IsReadOnly="True"
-                    RowDetailsVisibilityMode="Collapsed"
-                    AutoGenerateColumns="False"
-                    MinRowHeight="22"           
-                    Background="#fff"
-                    VerticalGridLinesBrush="#1c2541"
-                    HorizontalGridLinesBrush="#1c2541"
-                    VerticalAlignment="Stretch"
-                    VirtualizingStackPanel.IsVirtualizing="False"
-                    FontSize="16"
-                    FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"
-                    MouseDoubleClick="AuthorImageGrid_MouseDoubleClick"
-                    SelectionChanged="AuthorImageGrid_SelectionChanged">
-                <DataGrid.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
-                                   Color="#87ABF4"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
-                                   Color="#AEC2EB"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" 
-                                   Color="Black"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" 
-                                   Color="Black"/>
-                </DataGrid.Resources>
-
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding Index}" 
-                                      Header="Ном." 
-                                      Width="55"/>
-                    <DataGridTextColumn Binding="{Binding FileName}" 
-                                      Header="Имя"
-                                      Width="*"/>
-                    <DataGridTextColumn Binding="{Binding Resolution}"
-                                      Header="Разрешен."
-                                      Width="100"/>
-
-                    <DataGridTemplateColumn Header="" Width="30" IsReadOnly="True">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <!-- Минималистичный индикатор -->
-                                <Border Width="20" Height="20" 
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Center">
-                                    <Border Background="#1c2541" 
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Width="{Binding IndicatorWidth}"
-                                          Height="{Binding IndicatorHeight}"/>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-                    <DataGridTextColumn Binding="{Binding AspectRatio}"
-                                  Header="Соотнош." 
-                                  Width="90"/>
-                    <DataGridTextColumn Binding="{Binding FileSize}"
-                                  Header="Размер" 
-                                  Width="90"/>
-                    <DataGridTextColumn Binding="{Binding Format}"
-                                  Header="Формат"
-                                  Width="90"/>
-                </DataGrid.Columns>
-
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="#e9ebf5"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#001">
-                                <Setter Property="Background" Value="#EBEBEB"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#002">
-                                <Setter Property="Background" Value="#9CFF98"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#003">
-                                <Setter Property="Background" Value="#FFFB83"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#004">
-                                <Setter Property="Background" Value="#FCB5D7"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#005">
-                                <Setter Property="Background" Value="#F8B079"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#006">
-                                <Setter Property="Background" Value="#EC6A7A"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
-            
-            <DataGrid x:Name="ReplaceImageGrid" 
-                      Grid.Row="1"
-                      Visibility="Collapsed" 
-                      IsReadOnly="True"
-                      RowDetailsVisibilityMode="Collapsed"
-                      AutoGenerateColumns="False"
-                      MinRowHeight="22"           
-                      Background="#fff"
-                      VerticalGridLinesBrush="#1c2541"
-                      HorizontalGridLinesBrush="#1c2541"
-                      VirtualizingStackPanel.IsVirtualizing="False"
-                      FontSize="16"
-                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"
-                      SelectionChanged="ReplaceGrid_SelectionChanged">
-                <DataGrid.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
-                                     Color="#87ABF4"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
-                                     Color="#AEC2EB"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" 
-                                     Color="Black"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" 
-                                     Color="Black"/>
-                </DataGrid.Resources>
-
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding Index}" 
-                            Header="Ном." 
-                            Width="55"/>
-                    <DataGridTextColumn Binding="{Binding OriginalName}" Visibility="Hidden"
-                            Header="Оригинал" 
-                            Width="*"/>
-                    <DataGridTextColumn Binding="{Binding NewName}" 
-                            Header="Новое имя"
-                            Width="*"/>
-                </DataGrid.Columns>
-
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="#e9ebf5"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#001">
-                                <Setter Property="Background" Value="#EBEBEB"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#002">
-                                <Setter Property="Background" Value="#9CFF98"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#003">
-                                <Setter Property="Background" Value="#FFFB83"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#004">
-                                <Setter Property="Background" Value="#FCB5D7"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#005">
-                                <Setter Property="Background" Value="#F8B079"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#006">
-                                <Setter Property="Background" Value="#EC6A7A"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
-
-            <DataGrid x:Name="MoveImageGrid" 
-                      Grid.Row="1"
-                      Visibility="Collapsed"
-                      IsReadOnly="True"
-                      RowDetailsVisibilityMode="Collapsed"
-                      AutoGenerateColumns="False"
-                      MinRowHeight="22"           
-                      Background="#fff"
-                      VerticalGridLinesBrush="#1c2541"
-                      HorizontalGridLinesBrush="#1c2541"
-                      VerticalAlignment="Stretch"
-                      VirtualizingStackPanel.IsVirtualizing="False"
-                      FontSize="16"
-                      FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular" 
-                      SelectionChanged="MoveGrid_SelectionChanged">
-                <DataGrid.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
-                                     Color="#87ABF4"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" 
-                                     Color="#AEC2EB"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" 
-                                     Color="Black"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" 
-                                     Color="Black"/>
-                </DataGrid.Resources>
-
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding Index}" 
-                                        Header="Ном." 
-                                        Width="55"/>
-                    <DataGridTextColumn Binding="{Binding OriginalName}" Visibility="Hidden"
-                                        Header="Оригинал" 
-                                        Width="*"/>
-                    <DataGridTextColumn Binding="{Binding NewName}" 
-                                        Header="Новое имя"
-                                        Width="*"/>
-                </DataGrid.Columns>
-
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="Background" Value="#e9ebf5"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#001">
-                                <Setter Property="Background" Value="#EBEBEB"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#002">
-                                <Setter Property="Background" Value="#9CFF98"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#003">
-                                <Setter Property="Background" Value="#FFFB83"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#004">
-                                <Setter Property="Background" Value="#FCB5D7"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#005">
-                                <Setter Property="Background" Value="#F8B079"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding BackColor}" Value="#006">
-                                <Setter Property="Background" Value="#EC6A7A"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
-        </Grid>
-
-
-        <!-- Панель управления загрузкой -->
-        <StackPanel Grid.Row="1" Grid.Column="1"
-                    Margin="0,0,0,15"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center">
-            <local:Controller x:Name="ChooseImage"
-                              GlobalWidth="140" FigureWidth="130"
-                              Purpose="Action"                      
-                              Command="Выбрать файл"
-                              MouseLeftButtonDown="ChooseImage_MouseLeftButtonDown" />
-
-            <local:Controller x:Name="LoadFullTable"
-                              Margin="10,0,0,0"
-                              GlobalWidth="160" FigureWidth="150"
-                              Purpose="Action"                      
-                              Command="Загрузить таблицу"
-                              MouseLeftButtonDown="LoadFullTable_MouseLeftButtonDown" />
-
-            <local:Controller x:Name="CleanEverything"
-                              Margin="10,0,0,0"
-                              GlobalWidth="100" FigureWidth="90"
-                              Purpose="Action"                      
-                              Command="Очистить"
-                              MouseLeftButtonDown="CleanEverything_MouseLeftButtonDown" />
-        </StackPanel>
-
-
-        <StackPanel Grid.Row="1" Grid.Column="2"
-                    Margin="0,0,15,15"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center">
-            <local:Controller x:Name="GetNoAuthor"
-                              GlobalWidth="115" FigureWidth="105"
-                              Purpose="Action"                      
-                              Command="Без автора"
-                              MouseLeftButtonDown="GetNoAuthor_MouseLeftButtonDown" />
-
-            <local:Controller x:Name="CreateFolders"
-                              Margin="10,0,0,0"
-                              GlobalWidth="115" FigureWidth="105"
-                              Purpose="Action"                      
-                              Command="По папкам"
-                              MouseLeftButtonDown="CreateFolders_MouseLeftButtonDown" />
-        </StackPanel>
-
-
-
-        <!-- Столбик с действиями -->
-        <Grid Grid.Row="0" Grid.Column="2" 
-              Margin="0,15,15,10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <!-- Панель управления действиями -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                <local:Option x:Name="ShowAuthorMenuOption"
-                              GroupName="ActionGroup"
-                              IsChecked="True"
-                              Command="Авторы"
-                              Checked="ShowAuthorMenuOption_Checked" />
-
-                <local:Option x:Name="ShowTagMenuOption"
-                              GroupName="ActionGroup"
-                              Command="Теги"
-                              Checked="ShowTagMenuOption_Checked" />
-
-                <local:Option x:Name="ShowReplaceMenuOption"
-                              GroupName="ActionGroup"
-                              Command="Замена"
-                              Checked="ShowReplaceMenuOption_Checked" />
-
-                <local:Option x:Name="ShowMoveMenuOption"
-                              GroupName="ActionGroup"
-                              Command="Перестановка"
-                              Checked="ShowMoveMenuOption_Checked" />
-            </StackPanel>
-
-
-            <Border Name="AuthorContainer"
-                    Grid.Row="1"
-                    Visibility="Visible"
+            <Border Grid.Row="1" 
                     Background="#fff"
                     BorderBrush="black"
                     BorderThickness="1.8"
-                    CornerRadius="10" >
+                    CornerRadius="10">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock x:Name="NoAuthorText"
+                    <!-- Заголовок -->
+                    <TextBlock Text="Превью изображения"
+                              Grid.Row="0"
+                              Foreground="Black"
+                              HorizontalAlignment="Center"
+                              Margin="10,10,10,0"/>
+
+                    <!-- Область изображения -->
+                    <Border Grid.Row="1"
+                            Margin="10"
+                            Background="#f8f9fa"
+                            BorderBrush="#dee2e6"
+                            BorderThickness="1.8"
+                            CornerRadius="10">
+                        <Viewbox Margin="10"
+                                 Stretch="Uniform" 
+                                 MaxWidth="600" 
+                                 MaxHeight="800">
+                            <Image x:Name="PreviewImage"
+                                   Source="{Binding PreviewImageSource}"
+                                   Stretch="Uniform"/>
+                        </Viewbox>
+                    </Border>
+
+                    <!-- Информация о изображении -->
+                    <StackPanel Grid.Row="2" Margin="15,0,10,15">
+                        <TextBlock x:Name="PreviewFileName"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock x:Name="PreviewResolution"
+                                   FontSize="12"
+                                   Foreground="#666"/>
+                        <TextBlock x:Name="PreviewFileSize"
+                                   FontSize="12"
+                                   Foreground="#666"/>
+                        <TextBlock x:Name="PreviewFormat"
+                                   FontSize="12"
+                                   Foreground="#666"/>
+                    </StackPanel>
+
+                    <!-- Сообщение когда нет выбора -->
+                    <TextBlock x:Name="NoPreviewText"
                                Grid.Row="1"
-                               Text="Авторы не найдены"
+                               Text="Выберите изображение для просмотра"
                                TextWrapping="Wrap"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -647,160 +183,420 @@
                                Foreground="#999"
                                FontStyle="Italic"
                                Visibility="Visible"/>
-
-                    <!-- Список авторов -->
-                    <ScrollViewer Grid.Row="1"
-                                  Margin="10,10,10,10"
-                                  VerticalScrollBarVisibility="Auto">
-                        <WrapPanel x:Name="AuthorsWrapPanel"
-                                   Orientation="Horizontal">
-                            <!-- Авторы будут добавляться динамически -->
-
-                        </WrapPanel>
-                    </ScrollViewer>
                 </Grid>
             </Border>
+        </Grid>
+        
 
+        <!-- Центральный столбик с таблицами -->
+        <Grid Grid.Row="1" Grid.Column="1"
+              Margin="15,15,15,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <Grid Name="MoveContainer" 
-                  Grid.Row="1"
-                  Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="125" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" 
+                        Margin="0,0,0,10"
+                        Orientation="Horizontal" >
+                <local:OneMenuOption x:Name="ShowAllDataGrid"
+                                     GroupName="DataGridGroup"
+                                     IsChecked="True"
+                                     Command="Все изображения"
+                                     MouseLeftButtonDown="ShowAllDataGrid_MouseLeftButtonDown" />
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="125" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <local:OneMenuOption x:Name="ShowAuthorDataGrid"
+                                     GroupName="DataGridGroup"
+                                     Command="По авторам"
+                                     MouseLeftButtonDown="ShowAuthorDataGrid_MouseLeftButtonDown" />
 
-                    <TextBlock Grid.Column="0"
-                           Margin="0,10,0,0"
-                           Text="Перестановка:"
-                           VerticalAlignment="Top"/>
-                    <TextBox Grid.Column="1"
-                         TextWrapping="Wrap"
-                         x:Name="TemplateTextBox" 
-                         Text="{Binding NameMoveTemplate, 
-                                UpdateSourceTrigger=PropertyChanged,
-                                Mode=TwoWay}"/>
-                </Grid>
+                <local:OneMenuOption x:Name="ShowTagDataGrid"
+                                     GroupName="DataGridGroup"
+                                     Command="По тегам"
+                                     MouseLeftButtonDown="ShowTagDataGrid_MouseLeftButtonDown" />
 
-                <StackPanel Grid.Row="3"
-                        Margin="0,10,0,0"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Top">
-                    <local:Controller GlobalWidth="145" FigureWidth="135"
-                                      Purpose="Action"                      
-                                      Command="Предпросмотр"
-                                      MouseLeftButtonDown="PreviewMove_MouseLeftButtonDown" />
+                <local:OneMenuOption x:Name="ShowReplaceDataGrid"
+                                     GroupName="DataGridGroup"
+                                     Command="При замене"
+                                     MouseLeftButtonDown="ShowReplaceDataGrid_MouseLeftButtonDown" />
 
-                    <local:Controller GlobalWidth="145" FigureWidth="135"
-                                      Margin="10,0,0,0"
-                                      Purpose="Action"                      
-                                      Command="Переименовать"
-                                      MouseLeftButtonDown="RenameMove_MouseLeftButtonDown" />
-                </StackPanel>
+                <local:OneMenuOption x:Name="ShowMoveDataGrid"
+                                     GroupName="DataGridGroup"
+                                     Command="При перестановке"
+                                     MouseLeftButtonDown="ShowMoveDataGrid_MouseLeftButtonDown" />
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <DataGrid x:Name="AllDataGrid"
+                          Style="{StaticResource ImageDataGridStyle}"
+                          RowStyle="{StaticResource ImageDataGridRowStyle}"
+                          MouseDoubleClick="AllDataGrid_MouseDoubleClick"
+                          SelectionChanged="AllDataGrid_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Index}" 
+                                            Header="Ном." 
+                                            Width="55"/>
+                        <DataGridTextColumn Binding="{Binding FileName}" 
+                                            Header="Имя"
+                                            Width="*"/>
+                        <DataGridTextColumn Binding="{Binding Resolution}"
+                                            Header="Разрешен."
+                                            Width="100"/>
+
+                        <DataGridTemplateColumn Header="" Width="30" IsReadOnly="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <!-- Минималистичный индикатор -->
+                                    <Border Width="20" Height="20" 
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                        <Border Background="#1c2541" 
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Width="{Binding IndicatorWidth}"
+                                                Height="{Binding IndicatorHeight}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Binding="{Binding AspectRatio}"
+                                            Header="Соотнош." 
+                                            Width="90"/>
+                        <DataGridTextColumn Binding="{Binding FileSize}"
+                                            Header="Размер" 
+                                            Width="90"/>
+                        <DataGridTextColumn Binding="{Binding Format}"
+                                            Header="Формат"
+                                            Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <DataGrid x:Name="AuthorDataGrid"
+                          Style="{StaticResource ImageDataGridStyle}"
+                          RowStyle="{StaticResource ImageDataGridRowStyle}"
+                          MouseDoubleClick="AuthorDataGrid_MouseDoubleClick"
+                          SelectionChanged="AuthorDataGrid_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Index}" 
+                                            Header="Ном." 
+                                            Width="55"/>
+                        <DataGridTextColumn Binding="{Binding FileName}" 
+                                            Header="Имя"
+                                            Width="*"/>
+                        <DataGridTextColumn Binding="{Binding Resolution}"
+                                            Header="Разрешен."
+                                            Width="100"/>
+
+                        <DataGridTemplateColumn Header="" Width="30" IsReadOnly="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <!-- Минималистичный индикатор -->
+                                    <Border Width="20" Height="20" 
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                        <Border Background="#1c2541" 
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Width="{Binding IndicatorWidth}"
+                                                Height="{Binding IndicatorHeight}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Binding="{Binding AspectRatio}"
+                                            Header="Соотнош." 
+                                            Width="90"/>
+                        <DataGridTextColumn Binding="{Binding FileSize}"
+                                            Header="Размер" 
+                                            Width="90"/>
+                        <DataGridTextColumn Binding="{Binding Format}"
+                                            Header="Формат"
+                                            Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <DataGrid x:Name="TagDataGrid"
+                          Style="{StaticResource ImageDataGridStyle}"
+                          RowStyle="{StaticResource ImageDataGridRowStyle}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Index}" 
+                                            Header="Ном." 
+                                            Width="55"/>
+                        <DataGridTextColumn Binding="{Binding FileName}" 
+                                            Header="Имя"
+                                            Width="*"/>
+                        <DataGridTextColumn Binding="{Binding Resolution}"
+                                            Header="Разрешен."
+                                            Width="100"/>
+
+                        <DataGridTemplateColumn Header="" Width="30" IsReadOnly="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <!-- Минималистичный индикатор -->
+                                    <Border Width="20" Height="20" 
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                        <Border Background="#1c2541" 
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Width="{Binding IndicatorWidth}"
+                                                Height="{Binding IndicatorHeight}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Binding="{Binding AspectRatio}"
+                                            Header="Соотнош." 
+                                            Width="90"/>
+                        <DataGridTextColumn Binding="{Binding FileSize}"
+                                            Header="Размер" 
+                                            Width="90"/>
+                        <DataGridTextColumn Binding="{Binding Format}"
+                                            Header="Формат"
+                                            Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <DataGrid x:Name="ReplaceDataGrid"
+                          Style="{StaticResource ImageDataGridStyle}"
+                          RowStyle="{StaticResource ImageDataGridRowStyle}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Index}" 
+                                            Header="Ном." 
+                                            Width="55"/>
+                        <DataGridTextColumn Binding="{Binding OriginalName}" 
+                                            Visibility="Hidden"
+                                            Header="Оригинал" 
+                                            Width="*"/>
+                        <DataGridTextColumn Binding="{Binding NewName}" 
+                                            Header="Новое имя"
+                                            Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <DataGrid x:Name="MoveDataGrid"
+                          Style="{StaticResource ImageDataGridStyle}"
+                          RowStyle="{StaticResource ImageDataGridRowStyle}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Index}" 
+                                            Header="Ном." 
+                                            Width="55"/>
+                        <DataGridTextColumn Binding="{Binding OriginalName}" 
+                                            Visibility="Hidden"
+                                            Header="Оригинал" 
+                                            Width="*"/>
+                        <DataGridTextColumn Binding="{Binding NewName}" 
+                                            Header="Новое имя"
+                                            Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
             </Grid>
+        </Grid>
 
 
-            <Grid Name="ReplaceContainer" 
-                  Grid.Row="1" 
-                  Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="40" />
-                    <RowDefinition Height="50" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+        <!-- Правый столбик с действиями -->
+        <Grid Grid.Row="1" Grid.Column="2" 
+              Margin="0,15,15,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="115" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                <local:OneMenuOption x:Name="ShowAuthorActionGrid"
+                                     GroupName="ActionGroup"
+                                     IsChecked="True"
+                                     Command="Авторы"
+                                     MouseLeftButtonDown="ShowAuthorActionGrid_MouseLeftButtonDown" />
 
-                    <TextBlock Grid.Column="0"
-                               Margin="0,10,0,0"
-                               Text="Найти слово:"
-                               VerticalAlignment="Top"/>
-                    <TextBox Grid.Column="1"
-                         TextWrapping="Wrap"
-                         x:Name="FindTextBox" 
-                         Text="{Binding FindTemplate, 
-                                        UpdateSourceTrigger=PropertyChanged,
-                                        Mode=TwoWay}"/>
+                <local:OneMenuOption x:Name="ShowTagActionGrid"
+                                     GroupName="ActionGroup"
+                                     Command="Теги"
+                                     MouseLeftButtonDown="ShowTagActionGrid_MouseLeftButtonDown" />
+
+                <local:OneMenuOption x:Name="ShowReplaceActionGrid"
+                                     GroupName="ActionGroup"
+                                     Command="Замена"
+                                     MouseLeftButtonDown="ShowReplaceActionGrid_MouseLeftButtonDown" />
+
+                <local:OneMenuOption x:Name="ShowMoveActionGrid"
+                                     GroupName="ActionGroup"
+                                     Command="Перестановка"
+                                     MouseLeftButtonDown="ShowMoveActionGrid_MouseLeftButtonDown" />
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <Grid Name="AuthorActionGrid">
+                    <Border Background="#fff"
+                            BorderBrush="black"
+                            BorderThickness="1.8"
+                            CornerRadius="10" >
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock x:Name="NoAuthorText"
+                                       Grid.Row="1"
+                                       Text="Авторы не найдены"
+                                       TextWrapping="Wrap"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Foreground="#999"
+                                       FontStyle="Italic"
+                                       Visibility="Visible"/>
+
+                            <!-- Список авторов -->
+                            <ScrollViewer Grid.Row="1"
+                                          Margin="10,10,10,10"
+                                          VerticalScrollBarVisibility="Auto">
+                                <WrapPanel x:Name="AuthorsWrapPanel"
+                                           Orientation="Horizontal">
+                                    <!-- Авторы будут добавляться динамически -->
+
+                                </WrapPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
                 </Grid>
 
+                <Grid Name="MoveActionGrid" 
+                      Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="125" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                <Grid Grid.Row="1" 
-                      Margin="0,10,0,0" >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="115" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="125" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0"
-                           Margin="0,10,0,0"
-                           Text="Заменить на:"
-                           VerticalAlignment="Top"/>
-                    <TextBox Grid.Column="1"
-                         TextWrapping="Wrap"
-                         x:Name="ReplaceTextBox" 
-                         Text="{Binding ReplaceTemplate, 
+                        <TextBlock Grid.Column="0"
+                                   Margin="0,10,0,0"
+                                   Text="Перестановка:"
+                                   VerticalAlignment="Top"/>
+                        <TextBox Grid.Column="1"
+                                 TextWrapping="Wrap"
+                                 x:Name="TemplateTextBox" 
+                                 Text="{Binding NameMoveTemplate, 
                                         UpdateSourceTrigger=PropertyChanged,
                                         Mode=TwoWay}"/>
+                    </Grid>
+
+                    <StackPanel Grid.Row="3"
+                                Margin="0,10,0,0"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top">
+                        <local:Controller Purpose="Action"                      
+                                          Command="Предпросмотр"
+                                          MouseLeftButtonDown="PreviewMove_MouseLeftButtonDown" />
+
+                        <local:Controller Margin="10,0,0,0"
+                                          Purpose="Action"                      
+                                          Command="Переименовать"
+                                          MouseLeftButtonDown="RenameMove_MouseLeftButtonDown" />
+                    </StackPanel>
                 </Grid>
 
-                <WrapPanel Grid.Row="2"
-                       Margin="0,10,0,0"            
-                       Orientation="Horizontal"
-                       HorizontalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="PositionStart"                            
-                                 Content="Начало" 
-                                 GroupName="PositionGroup" />
-                        <RadioButton x:Name="PositionBeforeNumber"
-                                 Margin="10,0,0,0"
-                                 Content="Перед числом" 
-                                 GroupName="PositionGroup" />
+                <Grid Name="ReplaceActionGrid" 
+                      Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="50" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="115" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Margin="0,10,0,0"
+                                   Text="Найти слово:"
+                                   VerticalAlignment="Top"/>
+                        <TextBox Grid.Column="1"
+                                 TextWrapping="Wrap"
+                                 x:Name="FindTextBox" 
+                                 Text="{Binding FindTemplate, 
+                                                UpdateSourceTrigger=PropertyChanged,
+                                                Mode=TwoWay}"/>
+                    </Grid>
+
+                    <Grid Grid.Row="1" 
+                          Margin="0,10,0,0" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="115" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Margin="0,10,0,0"
+                                   Text="Заменить на:"
+                                   VerticalAlignment="Top"/>
+                        <TextBox Grid.Column="1"
+                                 TextWrapping="Wrap"
+                                 x:Name="ReplaceTextBox" 
+                                 Text="{Binding ReplaceTemplate, 
+                                                UpdateSourceTrigger=PropertyChanged,
+                                                Mode=TwoWay}"/>
+                    </Grid>
+
+                    <WrapPanel Grid.Row="2"
+                               Margin="0,10,0,0"            
+                               Orientation="Horizontal"
+                               HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="PositionStart"                            
+                                         Content="Начало" 
+                                         GroupName="PositionGroup" />
+                            <RadioButton x:Name="PositionBeforeNumber"
+                                         Margin="10,0,0,0"
+                                         Content="Перед числом" 
+                                         GroupName="PositionGroup" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5,0,0"
+                                    Orientation="Horizontal">
+                            <RadioButton x:Name="PositionEnd"  
+                                         Content="Конец" 
+                                         GroupName="PositionGroup" />
+                            <RadioButton x:Name="PositionReplace"
+                                         Margin="10,0,0,0"
+                                         IsChecked="True"
+                                         Content="Заменить собой" 
+                                         GroupName="PositionGroup" />
+                        </StackPanel>
+                    </WrapPanel>
+
+                    <StackPanel Grid.Row="5"
+                                Margin="0,10,0,0"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top">
+                        <local:Controller Purpose="Action"                      
+                                          Command="Предпросмотр"
+                                          MouseLeftButtonDown="PreviewReplace_MouseLeftButtonDown" />
+
+                        <local:Controller Margin="10,0,0,0"
+                                          Purpose="Action"                      
+                                          Command="Переименовать"
+                                          MouseLeftButtonDown="RenameReplace_MouseLeftButtonDown" />
                     </StackPanel>
-
-                    <StackPanel Margin="0,5,0,0"
-                            Orientation="Horizontal">
-                        <RadioButton x:Name="PositionEnd"  
-                                 Content="Конец" 
-                                 GroupName="PositionGroup" />
-                        <RadioButton x:Name="PositionReplace"
-                                 Margin="10,0,0,0"
-                                 IsChecked="True"
-                                 Content="Заменить собой" 
-                                 GroupName="PositionGroup" />
-                    </StackPanel>
-                </WrapPanel>
-
-                <StackPanel Grid.Row="5"
-                        Margin="0,10,0,0"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Top">
-                    <local:Controller GlobalWidth="145" FigureWidth="135"
-                                      Purpose="Action"                      
-                                      Command="Предпросмотр"
-                                      MouseLeftButtonDown="PreviewReplace_MouseLeftButtonDown" />
-
-                    <local:Controller GlobalWidth="145" FigureWidth="135"
-                                      Margin="10,0,0,0"
-                                      Purpose="Action"                      
-                                      Command="Переименовать"
-                                      MouseLeftButtonDown="RenameReplace_MouseLeftButtonDown" />
-                </StackPanel>
+                </Grid>
             </Grid>
         </Grid>
 
@@ -812,7 +608,6 @@
         <local:Controller x:Name="Cancel"
                           Grid.Row="1" Grid.Column="1"
                           Margin="0,0,15,15"
-                          GlobalWidth="45" FigureWidth="35"
                           Purpose="Action"                      
                           Command="||"
                           Visibility="Collapsed"
@@ -834,5 +629,47 @@
                    HorizontalAlignment="Left"
                    TextAlignment="Left"
                    TextWrapping="Wrap"/>
+
+
+
+        <!-- Панель управления загрузкой -->
+        <StackPanel Grid.Row="2" Grid.Column="1"
+                    Margin="0,0,0,15"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <local:Controller x:Name="ChooseImage"
+                              Purpose="Action"                      
+                              Command="Выбрать файл"
+                              MouseLeftButtonDown="ChooseImage_MouseLeftButtonDown" />
+
+            <local:Controller x:Name="LoadFullTable"
+                              Margin="10,0,0,0"
+                              Purpose="Action"                      
+                              Command="Загрузить таблицу"
+                              MouseLeftButtonDown="LoadFullTable_MouseLeftButtonDown" />
+
+            <local:Controller x:Name="CleanEverything"
+                              Margin="10,0,0,0"
+                              Purpose="Action"                      
+                              Command="Очистить"
+                              MouseLeftButtonDown="CleanEverything_MouseLeftButtonDown" />
+        </StackPanel>
+
+
+        <StackPanel Grid.Row="2" Grid.Column="2"
+                    Margin="0,0,15,15"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <local:Controller x:Name="GetNoAuthor"
+                              Purpose="Action"                      
+                              Command="Без автора"
+                              MouseLeftButtonDown="GetNoAuthor_MouseLeftButtonDown" />
+
+            <local:Controller x:Name="CreateFolders"
+                              Margin="10,0,0,0"
+                              Purpose="Action"                      
+                              Command="По папкам"
+                              MouseLeftButtonDown="CreateFolders_MouseLeftButtonDown" />
+        </StackPanel>
     </Grid>
 </Window>

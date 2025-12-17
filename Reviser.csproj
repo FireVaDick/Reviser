@@ -57,17 +57,24 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Option.xaml.cs">
-      <DependentUpon>Option.xaml</DependentUpon>
+    <Compile Include="Elements\AnyMenuOption.xaml.cs">
+      <DependentUpon>AnyMenuOption.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ImageNewName.cs" />
-    <Compile Include="ImageParsedName.cs" />
-    <Compile Include="ImageInfoItem.cs" />
-    <Page Include="Option.xaml">
+    <Compile Include="Elements\OneMenuOption.xaml.cs">
+      <DependentUpon>OneMenuOption.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Classes\ImageNewName.cs" />
+    <Compile Include="Classes\ImageParsedName.cs" />
+    <Compile Include="Classes\ImageInfoItem.cs" />
+    <Page Include="Elements\AnyMenuOption.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Controller.xaml">
+    <Page Include="Elements\OneMenuOption.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Elements\Controller.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -75,12 +82,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="Animation.cs" />
+    <Compile Include="Classes\Animation.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controller.xaml.cs">
+    <Compile Include="Elements\Controller.xaml.cs">
       <DependentUpon>Controller.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
@@ -89,7 +96,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PartsOfImageName.cs" />
+    <Compile Include="Classes\PartsOfImageName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

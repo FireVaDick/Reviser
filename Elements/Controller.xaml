@@ -5,11 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignWidth="80" d:DesignHeight="40"
-             Width="{Binding GlobalWidth, RelativeSource={RelativeSource AncestorType=UserControl}}"
              Height="40"
              Cursor="Hand" FontSize="13"
              FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"      
-             HorizontalAlignment="Center" VerticalAlignment="Top"
+             HorizontalAlignment="Stretch" VerticalAlignment="Center"
              Loaded="Controller_Loaded"
              MouseLeftButtonUp="Controller_MouseLeftButtonUp"
              MouseLeftButtonDown="Controller_MouseLeftButtonDown"
@@ -34,6 +33,7 @@
                    RadiusX="4" RadiusY="4" />
 
         <TextBlock Name="CommandText"
+                   Margin="20,0,20,0"
                    Foreground="{Binding TextColor, RelativeSource={RelativeSource AncestorType=UserControl}}"
                    Text="{Binding Command, RelativeSource={RelativeSource AncestorType=UserControl}}"        
                    TextAlignment="Center" 
