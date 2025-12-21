@@ -6,9 +6,9 @@
         xmlns:local="clr-namespace:Reviser"
         mc:Ignorable="d"
         Title="Главное меню"
-        Width="1260" Height="600"
-        MinWidth="1260" MinHeight="600"
-        d:DesignWidth="1260" d:DesignHeight="600"
+        Width="1280" Height="600"
+        MinWidth="1280" MinHeight="600"
+        d:DesignWidth="1280" d:DesignHeight="600"
         FontSize="16"
         FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"      
         Background="#dddfe9"
@@ -16,6 +16,7 @@
     <Window.Resources>
         <Style x:Key="ImageDataGridStyle" TargetType="DataGrid">
             <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
             <Setter Property="RowDetailsVisibilityMode" Value="Collapsed"/>
             <Setter Property="AutoGenerateColumns" Value="False"/>
             <Setter Property="MinRowHeight" Value="22"/>
@@ -63,6 +64,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -87,36 +89,42 @@
                                      GroupName="ClassGroup"
                                      Command="1s"
                                      ClickedColor="#EBEBEB"
+                                     Width="35"
                                      MouseLeftButtonDown="Class1s_MouseLeftButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class2e"
                                      GroupName="ClassGroup"
                                      Command="2e"
                                      ClickedColor="#9CFF98"
+                                     Width="35"
                                      MouseLeftButtonDown="Class2e_MouseLeftButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class3n"
                                      GroupName="ClassGroup"
                                      Command="3n"
                                      ClickedColor="#FFFB83"
+                                     Width="35"
                                      MouseLeftButtonDown="Class3n_MouseLeftButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class4c"
                                      GroupName="ClassGroup"
                                      Command="4c"
                                      ClickedColor="#FCB5D7"
+                                     Width="35"
                                      MouseLeftButtonDown="Class4c_MouseLeftButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class5j"
                                      GroupName="ClassGroup"
                                      Command="5j"
                                      ClickedColor="#F8B079"
+                                     Width="35"
                                      MouseLeftButtonDown="Class5j_MouseLeftButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class6h"
                                      GroupName="ClassGroup"
                                      Command="6h"
                                      ClickedColor="#EC6A7A"
+                                     Width="35"
                                      MouseLeftButtonDown="Class6h_MouseLeftButtonDown" />
             </StackPanel>
 
@@ -157,17 +165,26 @@
                     </Border>
 
                     <!-- Информация о изображении -->
-                    <StackPanel Grid.Row="2" Margin="15,0,10,15">
+                    <StackPanel Grid.Row="2" Margin="15,0,15,15">
                         <TextBlock x:Name="PreviewFileName"
                                    TextWrapping="Wrap"
                                    Margin="0,0,0,5"/>
+                        
+                        <TextBlock x:Name="PreviewCharacter"
+                                   FontSize="12"
+                                   Foreground="#666"/>
+                        <TextBlock x:Name="PreviewAuthor"
+                                   FontSize="12"
+                                   Foreground="#666"/>
+                        <TextBlock x:Name="PreviewTags"
+                                   Margin="0,0,0,8"
+                                   FontSize="12"
+                                   Foreground="#666"/>
+                        
                         <TextBlock x:Name="PreviewResolution"
                                    FontSize="12"
                                    Foreground="#666"/>
                         <TextBlock x:Name="PreviewFileSize"
-                                   FontSize="12"
-                                   Foreground="#666"/>
-                        <TextBlock x:Name="PreviewFormat"
                                    FontSize="12"
                                    Foreground="#666"/>
                     </StackPanel>
@@ -175,6 +192,7 @@
                     <!-- Сообщение когда нет выбора -->
                     <TextBlock x:Name="NoPreviewText"
                                Grid.Row="1"
+                               Padding="10"
                                Text="Выберите изображение для просмотра"
                                TextWrapping="Wrap"
                                HorizontalAlignment="Center"
@@ -205,33 +223,84 @@
                                      Command="Все изображения"
                                      MouseLeftButtonDown="ShowAllDataGrid_MouseLeftButtonDown" />
 
+                <local:OneMenuOption x:Name="ShowCharacterDataGrid"
+                                     GroupName="DataGridGroup"
+                                     Command="Персонажи"
+                                     MouseLeftButtonDown="ShowCharacterDataGrid_MouseLeftButtonDown" />
+
                 <local:OneMenuOption x:Name="ShowAuthorDataGrid"
                                      GroupName="DataGridGroup"
-                                     Command="По авторам"
+                                     Command="Авторы"
                                      MouseLeftButtonDown="ShowAuthorDataGrid_MouseLeftButtonDown" />
 
                 <local:OneMenuOption x:Name="ShowTagDataGrid"
                                      GroupName="DataGridGroup"
-                                     Command="По тегам"
+                                     Command="Теги"
                                      MouseLeftButtonDown="ShowTagDataGrid_MouseLeftButtonDown" />
 
                 <local:OneMenuOption x:Name="ShowReplaceDataGrid"
                                      GroupName="DataGridGroup"
-                                     Command="При замене"
+                                     Command="Замена"
                                      MouseLeftButtonDown="ShowReplaceDataGrid_MouseLeftButtonDown" />
 
                 <local:OneMenuOption x:Name="ShowMoveDataGrid"
                                      GroupName="DataGridGroup"
-                                     Command="При перестановке"
+                                     Command="Перестановка"
                                      MouseLeftButtonDown="ShowMoveDataGrid_MouseLeftButtonDown" />
             </StackPanel>
 
             <Grid Grid.Row="1">
                 <DataGrid x:Name="AllDataGrid"
+                          Visibility="Visible"
                           Style="{StaticResource ImageDataGridStyle}"
                           RowStyle="{StaticResource ImageDataGridRowStyle}"
                           MouseDoubleClick="AllDataGrid_MouseDoubleClick"
                           SelectionChanged="AllDataGrid_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Index}" 
+                                            Header="Ном." 
+                                            Width="55"/>
+                        <DataGridTextColumn Binding="{Binding FileName}" 
+                                            Header="Имя"
+                                            Width="*"/>
+                        <DataGridTextColumn Binding="{Binding Resolution}"
+                                            Header="Разрешен."
+                                            Width="100"/>
+
+                        <DataGridTemplateColumn Header="" Width="30" IsReadOnly="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <!-- Минималистичный индикатор -->
+                                    <Border Width="20" Height="20" 
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                        <Border Background="#1c2541" 
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Width="{Binding IndicatorWidth}"
+                                                Height="{Binding IndicatorHeight}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Binding="{Binding AspectRatio}"
+                                            Header="Соотнош." 
+                                            Width="90"/>
+                        <DataGridTextColumn Binding="{Binding FileSize}"
+                                            Header="Размер" 
+                                            Width="90"/>
+                        <DataGridTextColumn Binding="{Binding Format}"
+                                            Header="Формат"
+                                            Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <DataGrid x:Name="CharacterDataGrid"
+                          Style="{StaticResource ImageDataGridStyle}"
+                          RowStyle="{StaticResource ImageDataGridRowStyle}"
+                          MouseDoubleClick="CharacterDataGrid_MouseDoubleClick"
+                          SelectionChanged="CharacterDataGrid_SelectionChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
@@ -319,7 +388,9 @@
 
                 <DataGrid x:Name="TagDataGrid"
                           Style="{StaticResource ImageDataGridStyle}"
-                          RowStyle="{StaticResource ImageDataGridRowStyle}">
+                          RowStyle="{StaticResource ImageDataGridRowStyle}"
+                          MouseDoubleClick="TagDataGrid_MouseDoubleClick"
+                          SelectionChanged="TagDataGrid_SelectionChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
@@ -362,7 +433,9 @@
 
                 <DataGrid x:Name="ReplaceDataGrid"
                           Style="{StaticResource ImageDataGridStyle}"
-                          RowStyle="{StaticResource ImageDataGridRowStyle}">
+                          RowStyle="{StaticResource ImageDataGridRowStyle}"
+                          MouseDoubleClick="ReplaceDataGrid_MouseDoubleClick"
+                          SelectionChanged="ReplaceDataGrid_SelectionChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
@@ -379,7 +452,9 @@
 
                 <DataGrid x:Name="MoveDataGrid"
                           Style="{StaticResource ImageDataGridStyle}"
-                          RowStyle="{StaticResource ImageDataGridRowStyle}">
+                          RowStyle="{StaticResource ImageDataGridRowStyle}"
+                          MouseDoubleClick="MoveDataGrid_MouseDoubleClick"
+                          SelectionChanged="MoveDataGrid_SelectionChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
@@ -406,9 +481,14 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                <local:OneMenuOption x:Name="ShowAuthorActionGrid"
-                                     GroupName="ActionGroup"
+                <local:OneMenuOption x:Name="ShowCharacterActionGrid"
                                      IsChecked="True"
+                                     GroupName="ActionGroup"                                 
+                                     Command="Персонаж"
+                                     MouseLeftButtonDown="ShowCharacterActionGrid_MouseLeftButtonDown" />
+
+                <local:OneMenuOption x:Name="ShowAuthorActionGrid"
+                                     GroupName="ActionGroup"                                 
                                      Command="Авторы"
                                      MouseLeftButtonDown="ShowAuthorActionGrid_MouseLeftButtonDown" />
 
@@ -417,19 +497,20 @@
                                      Command="Теги"
                                      MouseLeftButtonDown="ShowTagActionGrid_MouseLeftButtonDown" />
 
-                <local:OneMenuOption x:Name="ShowReplaceActionGrid"
+                <local:OneMenuOption x:Name="ShowRenameActionGrid"
                                      GroupName="ActionGroup"
-                                     Command="Замена"
-                                     MouseLeftButtonDown="ShowReplaceActionGrid_MouseLeftButtonDown" />
+                                     Command="Имя"
+                                     MouseLeftButtonDown="ShowRenameActionGrid_MouseLeftButtonDown" />
 
-                <local:OneMenuOption x:Name="ShowMoveActionGrid"
+                <local:OneMenuOption x:Name="ShowOtherActionGrid"
                                      GroupName="ActionGroup"
-                                     Command="Перестановка"
-                                     MouseLeftButtonDown="ShowMoveActionGrid_MouseLeftButtonDown" />
+                                     Command="Другое"
+                                     MouseLeftButtonDown="ShowOtherActionGrid_MouseLeftButtonDown" />
             </StackPanel>
 
             <Grid Grid.Row="1">
-                <Grid Name="AuthorActionGrid">
+                <Grid Name="CharacterActionGrid"
+                      Visibility="Visible">
                     <Border Background="#fff"
                             BorderBrush="black"
                             BorderThickness="1.8"
@@ -438,10 +519,83 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock x:Name="NoCharacterText"
+                                       Grid.Row="1"
+                                       Padding="10"
+                                       Text="Персонажи не найдены"
+                                       TextWrapping="Wrap"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Foreground="#999"
+                                       FontStyle="Italic"
+                                       Visibility="Visible"/>
+
+                            <!-- Список авторов -->
+                            <ScrollViewer Grid.Row="1"
+                                          Margin="10,10,10,10"
+                                          VerticalScrollBarVisibility="Auto">
+                                <WrapPanel x:Name="CharacterWrapPanel"
+                                           Margin="0,0,10,0"
+                                           Orientation="Horizontal">
+                                    <!-- Авторы будут добавляться динамически -->
+
+                                </WrapPanel>
+                            </ScrollViewer>
+
+                            <Grid Grid.Row="2"
+                                  Margin="0,0,15,15"
+                                  Height="35"
+                                  HorizontalAlignment="Right">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <ComboBox Name="CharacterFilterTypeComboBox"
+                                          Grid.Column="0"
+                                          Width="50"
+                                          Margin="0,0,-1,0"
+                                          FontSize="16"
+                                          VerticalContentAlignment="Center"
+                                          SelectionChanged="CharacterFilterTypeComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="&lt;="/>
+                                    <ComboBoxItem IsSelected="True" Content="&gt;="/>
+                                </ComboBox>
+
+                                <TextBox Name="CharacterAmountTextBox"
+                                         Grid.Column="1"
+                                         Width="50"
+                                         FontSize="18"
+                                         TextAlignment="Center"
+                                         VerticalContentAlignment="Center"
+                                         Text="{Binding CharacterAmountTemplate, 
+                                                        UpdateSourceTrigger=PropertyChanged,
+                                                        Mode=TwoWay}"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+                
+                <Grid Name="AuthorActionGrid"
+                      Visibility="Collapsed">
+                    <Border Background="#fff"
+                            BorderBrush="black"
+                            BorderThickness="1.8"
+                            CornerRadius="10" >
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <TextBlock x:Name="NoAuthorText"
                                        Grid.Row="1"
+                                       Padding="10"
                                        Text="Авторы не найдены"
                                        TextWrapping="Wrap"
                                        HorizontalAlignment="Center"
@@ -455,146 +609,278 @@
                             <ScrollViewer Grid.Row="1"
                                           Margin="10,10,10,10"
                                           VerticalScrollBarVisibility="Auto">
-                                <WrapPanel x:Name="AuthorsWrapPanel"
+                                <WrapPanel x:Name="AuthorWrapPanel"
+                                           Margin="0,0,10,0"
                                            Orientation="Horizontal">
                                     <!-- Авторы будут добавляться динамически -->
 
                                 </WrapPanel>
                             </ScrollViewer>
+
+                            <Grid Grid.Row="2"
+                                  Margin="0,0,15,15"
+                                  Height="35"
+                                  HorizontalAlignment="Right">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <ComboBox Name="AuthorFilterTypeComboBox"
+                                          Grid.Column="0"
+                                          Width="50"
+                                          Margin="0,0,-1,0"
+                                          FontSize="16"
+                                          VerticalContentAlignment="Center"
+                                          SelectionChanged="AuthorFilterTypeComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="&lt;="/>
+                                    <ComboBoxItem IsSelected="True" Content="&gt;="/>
+                                </ComboBox>
+                                
+                                <TextBox Name="AuthorAmountTextBox"
+                                         Grid.Column="1"
+                                         Width="50"
+                                         FontSize="18"
+                                         TextAlignment="Center"
+                                         VerticalContentAlignment="Center"
+                                         Text="{Binding AuthorAmountTemplate, 
+                                                        UpdateSourceTrigger=PropertyChanged,
+                                                        Mode=TwoWay}"/>
+                            </Grid>
                         </Grid>
                     </Border>
                 </Grid>
 
-                <Grid Name="MoveActionGrid" 
+                <Grid Name="TagActionGrid"
                       Visibility="Collapsed">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="125" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                    <Border Background="#fff"
+                            BorderBrush="black"
+                            BorderThickness="1.8"
+                            CornerRadius="10" >
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="125" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="NoTagText"
+                                       Grid.Row="1"
+                                       Padding="10"
+                                       Text="Теги не найдены"
+                                       TextWrapping="Wrap"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Foreground="#999"
+                                       FontStyle="Italic"
+                                       Visibility="Visible"/>
 
-                        <TextBlock Grid.Column="0"
-                                   Margin="0,10,0,0"
-                                   Text="Перестановка:"
-                                   VerticalAlignment="Top"/>
-                        <TextBox Grid.Column="1"
-                                 TextWrapping="Wrap"
-                                 x:Name="TemplateTextBox" 
-                                 Text="{Binding NameMoveTemplate, 
-                                        UpdateSourceTrigger=PropertyChanged,
-                                        Mode=TwoWay}"/>
-                    </Grid>
+                            <!-- Список тегов -->
+                            <ScrollViewer Grid.Row="1"
+                                          Margin="10,10,10,10"
+                                          VerticalScrollBarVisibility="Auto">
+                                <WrapPanel x:Name="TagWrapPanel"
+                                           Margin="0,0,10,0"
+                                           Orientation="Horizontal">
+                                    <!-- Теги будут добавляться динамически -->
 
-                    <StackPanel Grid.Row="3"
-                                Margin="0,10,0,0"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Top">
-                        <local:Controller Purpose="Action"                      
-                                          Command="Предпросмотр"
-                                          MouseLeftButtonDown="PreviewMove_MouseLeftButtonDown" />
+                                </WrapPanel>
+                            </ScrollViewer>
 
-                        <local:Controller Margin="10,0,0,0"
-                                          Purpose="Action"                      
-                                          Command="Переименовать"
-                                          MouseLeftButtonDown="RenameMove_MouseLeftButtonDown" />
-                    </StackPanel>
+                            <Grid Grid.Row="2"
+                                  Margin="0,0,15,15"
+                                  Height="35"
+                                  HorizontalAlignment="Right">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <ComboBox Name="TagFilterTypeComboBox"
+                                          Grid.Column="0"
+                                          Width="50"
+                                          SelectedIndex="0"
+                                          Margin="0,0,-1,0"
+                                          FontSize="16"
+                                          VerticalContentAlignment="Center"
+                                          SelectionChanged="TagFilterTypeComboBox_SelectionChanged">
+                                    <ComboBoxItem IsSelected="True" Content="&gt;="/>
+                                    <ComboBoxItem Content="&lt;="/>
+                           
+                                </ComboBox>
+                                
+                                <TextBox Name="TagAmountTextBox"
+                                         Grid.Column="1"
+                                         Width="50"
+                                         VerticalContentAlignment="Center"
+                                         TextAlignment="Center"
+                                         Text="{Binding TagAmountTemplate, 
+                                                        UpdateSourceTrigger=PropertyChanged,
+                                                        Mode=TwoWay}"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
                 </Grid>
 
-                <Grid Name="ReplaceActionGrid" 
+                <Grid Name="RenameActionGrid"
                       Visibility="Collapsed">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="40" />
-                        <RowDefinition Height="50" />
-                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="115" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0"
-                                   Margin="0,10,0,0"
-                                   Text="Найти слово:"
-                                   VerticalAlignment="Top"/>
-                        <TextBox Grid.Column="1"
-                                 TextWrapping="Wrap"
-                                 x:Name="FindTextBox" 
-                                 Text="{Binding FindTemplate, 
-                                                UpdateSourceTrigger=PropertyChanged,
-                                                Mode=TwoWay}"/>
-                    </Grid>
-
-                    <Grid Grid.Row="1" 
-                          Margin="0,10,0,0" >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="115" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0"
-                                   Margin="0,10,0,0"
-                                   Text="Заменить на:"
-                                   VerticalAlignment="Top"/>
-                        <TextBox Grid.Column="1"
-                                 TextWrapping="Wrap"
-                                 x:Name="ReplaceTextBox" 
-                                 Text="{Binding ReplaceTemplate, 
-                                                UpdateSourceTrigger=PropertyChanged,
-                                                Mode=TwoWay}"/>
-                    </Grid>
-
-                    <WrapPanel Grid.Row="2"
-                               Margin="0,10,0,0"            
-                               Orientation="Horizontal"
-                               HorizontalAlignment="Center">
-                        <StackPanel Orientation="Horizontal">
-                            <RadioButton x:Name="PositionStart"                            
-                                         Content="Начало" 
-                                         GroupName="PositionGroup" />
-                            <RadioButton x:Name="PositionBeforeNumber"
-                                         Margin="10,0,0,0"
-                                         Content="Перед числом" 
-                                         GroupName="PositionGroup" />
+                    <Grid Name="MoveActionGrid" 
+                          Grid.Row="0"
+                          Margin="0,0,0,15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="125" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="125" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                        
+                            <TextBlock Grid.Column="0"
+                                       Margin="0,10,0,0"
+                                       Text="Перестановка:"
+                                       VerticalAlignment="Top"/>
+                             <TextBox Name="MoveTextBox" 
+                                      Grid.Column="1"
+                                      TextWrapping="Wrap"                                   
+                                      Text="{Binding MoveTemplate, 
+                                            UpdateSourceTrigger=PropertyChanged,
+                                            Mode=TwoWay}"/>
+                        </Grid>
+                        
+                        <StackPanel Grid.Row="3"
+                                    Margin="0,10,0,0"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Top">
+                            <local:Controller Purpose="Action"                      
+                                              Command="Предпросмотр"
+                                              MouseLeftButtonDown="PreviewMove_MouseLeftButtonDown" />
+                        
+                            <local:Controller Margin="10,0,0,0"
+                                              Purpose="Action"                      
+                                              Command="Переименовать"
+                                              MouseLeftButtonDown="RenameMove_MouseLeftButtonDown" />
                         </StackPanel>
+                   </Grid>
 
-                        <StackPanel Margin="0,5,0,0"
-                                    Orientation="Horizontal">
-                            <RadioButton x:Name="PositionEnd"  
-                                         Content="Конец" 
-                                         GroupName="PositionGroup" />
-                            <RadioButton x:Name="PositionReplace"
-                                         Margin="10,0,0,0"
-                                         IsChecked="True"
-                                         Content="Заменить собой" 
-                                         GroupName="PositionGroup" />
+                    <Grid Name="ReplaceActionGrid" 
+                          Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40" />
+                            <RowDefinition Height="50" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                    
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="115" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                    
+                            <TextBlock Grid.Column="0"
+                                       Margin="0,10,0,0"
+                                       Text="Найти слово:"
+                                       VerticalAlignment="Top"/>
+                            <TextBox Name="FindTextBox" 
+                                     Grid.Column="1"
+                                     TextWrapping="Wrap"                                   
+                                     Text="{Binding FindTemplate, 
+                                                    UpdateSourceTrigger=PropertyChanged,
+                                                    Mode=TwoWay}"/>
+                        </Grid>
+                    
+                        <Grid Grid.Row="1" 
+                              Margin="0,10,0,0" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="115" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                    
+                            <TextBlock Grid.Column="0"
+                                       Margin="0,10,0,0"
+                                       Text="Заменить на:"
+                                       VerticalAlignment="Top"/>
+                            <TextBox Name="ReplaceTextBox" 
+                                     Grid.Column="1"
+                                     TextWrapping="Wrap"                                  
+                                     Text="{Binding ReplaceTemplate, 
+                                                    UpdateSourceTrigger=PropertyChanged,
+                                                    Mode=TwoWay}"/>
+                        </Grid>
+                    
+                        <WrapPanel Grid.Row="2"
+                                   Margin="0,10,0,0"            
+                                   Orientation="Horizontal"
+                                   HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="PositionStart"                            
+                                             Content="Начало" 
+                                             GroupName="PositionGroup" />
+                                <RadioButton x:Name="PositionBeforeNumber"
+                                             Margin="10,0,0,0"
+                                             Content="Перед числом" 
+                                             GroupName="PositionGroup" />
+                            </StackPanel>
+                    
+                            <StackPanel Margin="0,5,0,0"
+                                        Orientation="Horizontal">
+                                <RadioButton x:Name="PositionEnd"  
+                                             Content="Конец" 
+                                             GroupName="PositionGroup" />
+                                <RadioButton x:Name="PositionReplace"
+                                             Margin="10,0,0,0"
+                                             IsChecked="True"
+                                             Content="Заменить собой" 
+                                             GroupName="PositionGroup" />
+                            </StackPanel>
+                        </WrapPanel>
+                    
+                        <StackPanel Grid.Row="5"
+                                    Margin="0,10,0,0"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Top">
+                            <local:Controller Purpose="Action"                      
+                                              Command="Предпросмотр"
+                                              MouseLeftButtonDown="PreviewReplace_MouseLeftButtonDown" />
+                    
+                            <local:Controller Margin="10,0,0,0"
+                                              Purpose="Action"                      
+                                              Command="Переименовать"
+                                              MouseLeftButtonDown="RenameReplace_MouseLeftButtonDown" />
                         </StackPanel>
-                    </WrapPanel>
+                    </Grid>
+                </Grid>
 
-                    <StackPanel Grid.Row="5"
-                                Margin="0,10,0,0"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Top">
-                        <local:Controller Purpose="Action"                      
-                                          Command="Предпросмотр"
-                                          MouseLeftButtonDown="PreviewReplace_MouseLeftButtonDown" />
-
-                        <local:Controller Margin="10,0,0,0"
+                <Grid Name="OtherActionGrid"
+                      Visibility="Collapsed">
+                    <StackPanel Grid.Row="2" Grid.Column="2"
+                                Margin="0,0,15,15"
+                                Orientation="Vertical"
+                                HorizontalAlignment="Center">
+                        <local:Controller x:Name="GetNoAuthor"
                                           Purpose="Action"                      
-                                          Command="Переименовать"
-                                          MouseLeftButtonDown="RenameReplace_MouseLeftButtonDown" />
+                                          Command="Показать всех без автора"
+                                          MouseLeftButtonDown="GetNoAuthor_MouseLeftButtonDown" />
+
+                        <local:Controller x:Name="CreateFolders"
+                                          Margin="0,10,0,0"
+                                          Purpose="Action"                      
+                                          Command="Раскидать по папкам ориентации"
+                                          MouseLeftButtonDown="CreateFolders_MouseLeftButtonDown" />
                     </StackPanel>
                 </Grid>
             </Grid>
@@ -605,71 +891,59 @@
 
         
         <!--Внизу-->
-        <local:Controller x:Name="Cancel"
-                          Grid.Row="1" Grid.Column="1"
-                          Margin="0,0,15,15"
-                          Purpose="Action"                      
-                          Command="||"
-                          Visibility="Collapsed"
-                          HorizontalAlignment="Right"
-                          MouseLeftButtonDown="Cancel_MouseLeftButtonDown" />
-
         <TextBlock Name="Count" 
-                   Grid.Row="3" Grid.Column="1"
-                   Margin="25,0,0,10"
-                   Width="150" Height="24"  
+                   Grid.Row="2" Grid.Column="1"
+                   Margin="20,0,0,10"
+                   Height="24"  
                    HorizontalAlignment="Left"
                    TextAlignment="Left" />
 
-        <TextBlock Name="SelectedFolder"
-                   Grid.Row="3" 
-                   Margin="25,0,0,10"
-                   Text="Папка не выбрана"
-                   Height="24"  
-                   HorizontalAlignment="Left"
-                   TextAlignment="Left"
-                   TextWrapping="Wrap"/>
+  
 
 
 
         <!-- Панель управления загрузкой -->
-        <StackPanel Grid.Row="2" Grid.Column="1"
-                    Margin="0,0,0,15"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center">
-            <local:Controller x:Name="ChooseImage"
+        <Grid Grid.Row="2" Grid.Column="1"
+              Margin="0,0,0,15">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <local:Controller x:Name="ChooseImage"
                               Purpose="Action"                      
                               Command="Выбрать файл"
                               MouseLeftButtonDown="ChooseImage_MouseLeftButtonDown" />
 
-            <local:Controller x:Name="LoadFullTable"
+                <local:Controller x:Name="LoadFullTable"
                               Margin="10,0,0,0"
                               Purpose="Action"                      
                               Command="Загрузить таблицу"
                               MouseLeftButtonDown="LoadFullTable_MouseLeftButtonDown" />
 
-            <local:Controller x:Name="CleanEverything"
+                <local:Controller x:Name="CleanEverything"
                               Margin="10,0,0,0"
                               Purpose="Action"                      
                               Command="Очистить"
                               MouseLeftButtonDown="CleanEverything_MouseLeftButtonDown" />
-        </StackPanel>
+            </StackPanel>
 
-
-        <StackPanel Grid.Row="2" Grid.Column="2"
-                    Margin="0,0,15,15"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center">
-            <local:Controller x:Name="GetNoAuthor"
+            <local:Controller x:Name="Cancel"
+                              Grid.Row="2" Grid.Column="1"
+                              Margin="0,0,15,0"
                               Purpose="Action"                      
-                              Command="Без автора"
-                              MouseLeftButtonDown="GetNoAuthor_MouseLeftButtonDown" />
+                              Command="||"
+                              Visibility="Collapsed"
+                              HorizontalAlignment="Right"
+                              MouseLeftButtonDown="Cancel_MouseLeftButtonDown" />
+        </Grid>
 
-            <local:Controller x:Name="CreateFolders"
-                              Margin="10,0,0,0"
-                              Purpose="Action"                      
-                              Command="По папкам"
-                              MouseLeftButtonDown="CreateFolders_MouseLeftButtonDown" />
-        </StackPanel>
+
+        <TextBlock Name="SelectedFolder"                 
+                   Grid.Row="3" Grid.Column="0"
+                   Visibility="Collapsed"
+                   Grid.ColumnSpan="3"
+                   Margin="0,0,0,10"
+                   Text="Папка не выбрана"
+                   Height="24"  
+                   HorizontalAlignment="Center"
+                   TextAlignment="Left"/>
     </Grid>
 </Window>

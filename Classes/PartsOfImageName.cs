@@ -16,6 +16,10 @@ namespace Reviser
         public string Number { get; set; }
         public string Tags { get; set; }
 
+        public List<string> CharacterList { get; set; } = new List<string>();
+        public List<string> AuthorList { get; set; } = new List<string>();
+        public List<string> TagList { get; set; } = new List<string>();
+
 
 
         static public PartsOfImageName ParseImageNameIntoParts(string fileName)
@@ -23,37 +27,59 @@ namespace Reviser
             var result = new PartsOfImageName();
             string nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
 
-            var authorMatch = Regex.Match(nameWithoutExt, @"\[([^\]]+)\]");
-            if (authorMatch.Success)
+            result.Author = ExtractAndRemove(ref nameWithoutExt, @"\[([^\]]+)\]");
+
+            if (!string.IsNullOrEmpty(result.Author))
             {
-                result.Author = authorMatch.Groups[1].Value;
-                nameWithoutExt = nameWithoutExt.Remove(authorMatch.Index, authorMatch.Length).Trim();
+                result.AuthorList = result.Author.Split(new[] { '&', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                                 .Select(author => author.Trim())
+                                                 .Where(author => !string.IsNullOrEmpty(author))
+                                                 .ToList();
             }
 
-            var classMatch = Regex.Match(nameWithoutExt, @"\{([^\}]+)\}");
-            if (classMatch.Success)
+            result.Class = ExtractAndRemove(ref nameWithoutExt, @"\{([^\}]+)\}");
+
+            result.Tags = ExtractAndRemove(ref nameWithoutExt, @"@(.+)$");
+
+            if (!string.IsNullOrEmpty(result.Tags))
             {
-                result.Class = classMatch.Groups[1].Value;
-                nameWithoutExt = nameWithoutExt.Remove(classMatch.Index, classMatch.Length).Trim();
+                result.TagList = result.Tags.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(tag => tag.Trim())
+                                            .Where(tag => !string.IsNullOrEmpty(tag))
+                                            .ToList();
             }
 
-            var numberMatch = Regex.Match(nameWithoutExt, @"(\d+(?:\.\d+)?)$");
-            if (numberMatch.Success)
-            {
-                result.Number = numberMatch.Groups[1].Value;
-                nameWithoutExt = nameWithoutExt.Remove(numberMatch.Index).Trim();
-            }
+            result.Number = ExtractAndRemove(ref nameWithoutExt, @"\s+(\d+(?:\.\d+)?)$");
 
-            var tagsMatch = Regex.Match(nameWithoutExt, @"@(.+)$");
-            if (tagsMatch.Success)
+            // Если не нашли число с пробелом, пробуем без пробела
+            if (string.IsNullOrEmpty(result.Number))
             {
-                result.Tags = tagsMatch.Groups[1].Value;
-                nameWithoutExt = nameWithoutExt.Remove(tagsMatch.Index).Trim();
+                result.Number = ExtractAndRemove(ref nameWithoutExt, @"(\d+(?:\.\d+)?)$");
             }
 
             result.Character = nameWithoutExt.Trim();
 
+            if (!string.IsNullOrEmpty(result.Character))
+            {
+                result.CharacterList = result.Character.Split(new[] { '&', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                                       .Select(character => character.Trim())
+                                                       .Where(character => !string.IsNullOrEmpty(character))
+                                                       .ToList();
+            }
+
             return result;
+        }
+
+        private static string ExtractAndRemove(ref string text, string pattern)
+        {
+            var match = Regex.Match(text, pattern);
+            if (match.Success)
+            {
+                string value = match.Groups[1].Value;
+                text = text.Remove(match.Index, match.Length).Trim();
+                return value;
+            }
+            return null;
         }
     }
 }

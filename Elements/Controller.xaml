@@ -8,7 +8,7 @@
              Height="40"
              Cursor="Hand" FontSize="13"
              FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"      
-             HorizontalAlignment="Stretch" VerticalAlignment="Center"
+             HorizontalAlignment="Stretch" VerticalAlignment="Top"
              Loaded="Controller_Loaded"
              MouseLeftButtonUp="Controller_MouseLeftButtonUp"
              MouseLeftButtonDown="Controller_MouseLeftButtonDown"
@@ -33,7 +33,7 @@
                    RadiusX="4" RadiusY="4" />
 
         <TextBlock Name="CommandText"
-                   Margin="20,0,20,0"
+                   Margin="15,0,15,0"
                    Foreground="{Binding TextColor, RelativeSource={RelativeSource AncestorType=UserControl}}"
                    Text="{Binding Command, RelativeSource={RelativeSource AncestorType=UserControl}}"        
                    TextAlignment="Center" 

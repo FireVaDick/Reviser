@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
@@ -8,124 +9,37 @@ namespace Reviser
     public class ImageInfoItem
     {
         #region Свойства
-        private int index;
-        private string fileName;
-        private string filePath;
-        private ImageSource previewImageSource;
-
-        private string character;
-        private string author;
-        private string classs;
-        private string number;
-        private string tags;
-
+        public int Index { get; set; }
+        public string FileName { get; set; }
+        public string FilePath { get; set; }
         public string Resolution { get; set; }
         public string AspectRatio { get; set; }
         public string FileSize { get; set; }
         public string Format { get; set; }
+        public string Character { get; set; }
+        public string Author { get; set; }
+        public string Class { get; set; }
+        public string Number { get; set; }
+        public string Tags { get; set; }
 
-        public int Index
-        {
-            get => index;
-            set
-            {
-                index = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string FileName
-        {
-            get => fileName;
-            set
-            {
-                fileName = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string FilePath
-        {
-            get => filePath;
-            set
-            {
-                filePath = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public ImageSource PreviewImageSource
-        {
-            get => previewImageSource;
-            set
-            {
-                previewImageSource = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Character
-        {
-            get => character;
-            set
-            {
-                character = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Author
-        {
-            get => author;
-            set
-            {
-                author = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Class
-        {
-            get => classs;
-            set
-            {
-                classs = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Number
-        {
-            get => number;
-            set
-            {
-                number = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Tags
-        {
-            get => tags;
-            set
-            {
-                tags = value;
-                OnPropertyChanged();
-            }
-        }
+        public List<string> CharacterList { get; set; } = new List<string>();
+        public List<string> AuthorList { get; set; } = new List<string>();
+        public List<string> TagList { get; set; } = new List<string>();
 
         public string BackColor
         {
             get
             {
-                string name = FileName?.ToLowerInvariant() ?? "";
-                if (name.Contains("{1s}")) return "#001";
-                else if (name.Contains("{2e}")) return "#002";
-                else if (name.Contains("{3n}")) return "#003";
-                else if (name.Contains("{4c}")) return "#004";
-                else if (name.Contains("{5j}")) return "#005";
-                else if (name.Contains("{6h}")) return "#006";
-                return null;
+                switch (Class)
+                {
+                    case "1s": return "#001"; 
+                    case "2e": return "#002";
+                    case "3n": return "#003";
+                    case "4c": return "#004";
+                    case "5j": return "#005";
+                    case "6h": return "#006";
+                    default: return "#000";
+                };
             }
         }
         public double IndicatorWidth

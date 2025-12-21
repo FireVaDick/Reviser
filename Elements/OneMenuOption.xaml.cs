@@ -80,7 +80,8 @@ namespace Reviser
         {
             if (sender is OneMenuOption oneMenuOption && oneMenuOption.isLoaded)
             {
-                oneMenuOption.IsChecked = !oneMenuOption.IsChecked;
+                if (!oneMenuOption.IsChecked)
+                    oneMenuOption.IsChecked = !oneMenuOption.IsChecked;
 
                 oneMenuOption.UncheckOthers(oneMenuOption.GroupName);
                 oneMenuOption.UpdateVisualState(oneMenuOption);
