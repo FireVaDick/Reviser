@@ -259,7 +259,7 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
-                                            Width="55"/>
+                                            Width="50"/>
                         <DataGridTextColumn Binding="{Binding FileName}" 
                                             Header="Имя"
                                             Width="*"/>
@@ -285,14 +285,15 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Binding="{Binding AspectRatio}"
-                                            Header="Соотнош." 
-                                            Width="90"/>
+                                            Header="Соотн." 
+                                            Width="60"/>
                         <DataGridTextColumn Binding="{Binding FileSize}"
                                             Header="Размер" 
                                             Width="90"/>
                         <DataGridTextColumn Binding="{Binding Format}"
-                                            Header="Формат"
-                                            Width="90"/>
+                                            Visibility="Hidden"
+                                            Header="Расш."
+                                            Width="60"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -304,7 +305,7 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
-                                            Width="55"/>
+                                            Width="50"/>
                         <DataGridTextColumn Binding="{Binding FileName}" 
                                             Header="Имя"
                                             Width="*"/>
@@ -330,14 +331,15 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Binding="{Binding AspectRatio}"
-                                            Header="Соотнош." 
-                                            Width="90"/>
+                                            Header="Соотн." 
+                                            Width="60"/>
                         <DataGridTextColumn Binding="{Binding FileSize}"
                                             Header="Размер" 
                                             Width="90"/>
                         <DataGridTextColumn Binding="{Binding Format}"
-                                            Header="Формат"
-                                            Width="90"/>
+                                            Visibility="Hidden"
+                                            Header="Расш."
+                                            Width="60"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -349,7 +351,7 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
-                                            Width="55"/>
+                                            Width="50"/>
                         <DataGridTextColumn Binding="{Binding FileName}" 
                                             Header="Имя"
                                             Width="*"/>
@@ -375,14 +377,15 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Binding="{Binding AspectRatio}"
-                                            Header="Соотнош." 
-                                            Width="90"/>
+                                            Header="Соотн." 
+                                            Width="60"/>
                         <DataGridTextColumn Binding="{Binding FileSize}"
                                             Header="Размер" 
                                             Width="90"/>
                         <DataGridTextColumn Binding="{Binding Format}"
-                                            Header="Формат"
-                                            Width="90"/>
+                                            Visibility="Hidden"
+                                            Header="Расш."
+                                            Width="60"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -394,7 +397,7 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
-                                            Width="55"/>
+                                            Width="50"/>
                         <DataGridTextColumn Binding="{Binding FileName}" 
                                             Header="Имя"
                                             Width="*"/>
@@ -420,26 +423,25 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Binding="{Binding AspectRatio}"
-                                            Header="Соотнош." 
-                                            Width="90"/>
+                                            Header="Соотн." 
+                                            Width="60"/>
                         <DataGridTextColumn Binding="{Binding FileSize}"
                                             Header="Размер" 
                                             Width="90"/>
                         <DataGridTextColumn Binding="{Binding Format}"
-                                            Header="Формат"
-                                            Width="90"/>
+                                            Visibility="Hidden"
+                                            Header="Расш."
+                                            Width="60"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <DataGrid x:Name="ReplaceDataGrid"
                           Style="{StaticResource ImageDataGridStyle}"
-                          RowStyle="{StaticResource ImageDataGridRowStyle}"
-                          MouseDoubleClick="ReplaceDataGrid_MouseDoubleClick"
-                          SelectionChanged="ReplaceDataGrid_SelectionChanged">
+                          RowStyle="{StaticResource ImageDataGridRowStyle}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
-                                            Width="55"/>
+                                            Width="50"/>
                         <DataGridTextColumn Binding="{Binding OriginalName}" 
                                             Visibility="Hidden"
                                             Header="Оригинал" 
@@ -452,13 +454,11 @@
 
                 <DataGrid x:Name="MoveDataGrid"
                           Style="{StaticResource ImageDataGridStyle}"
-                          RowStyle="{StaticResource ImageDataGridRowStyle}"
-                          MouseDoubleClick="MoveDataGrid_MouseDoubleClick"
-                          SelectionChanged="MoveDataGrid_SelectionChanged">
+                          RowStyle="{StaticResource ImageDataGridRowStyle}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Index}" 
                                             Header="Ном." 
-                                            Width="55"/>
+                                            Width="50"/>
                         <DataGridTextColumn Binding="{Binding OriginalName}" 
                                             Visibility="Hidden"
                                             Header="Оригинал" 
@@ -730,52 +730,9 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Name="MoveActionGrid" 
+                    <Grid Name="ReplaceActionGrid" 
                           Grid.Row="0"
                           Margin="0,0,0,15">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="125" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="125" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                        
-                            <TextBlock Grid.Column="0"
-                                       Margin="0,10,0,0"
-                                       Text="Перестановка:"
-                                       VerticalAlignment="Top"/>
-                             <TextBox Name="MoveTextBox" 
-                                      Grid.Column="1"
-                                      TextWrapping="Wrap"                                   
-                                      Text="{Binding MoveTemplate, 
-                                            UpdateSourceTrigger=PropertyChanged,
-                                            Mode=TwoWay}"/>
-                        </Grid>
-                        
-                        <StackPanel Grid.Row="3"
-                                    Margin="0,10,0,0"
-                                    Orientation="Horizontal"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Top">
-                            <local:Controller Purpose="Action"                      
-                                              Command="Предпросмотр"
-                                              MouseLeftButtonDown="PreviewMove_MouseLeftButtonDown" />
-                        
-                            <local:Controller Margin="10,0,0,0"
-                                              Purpose="Action"                      
-                                              Command="Переименовать"
-                                              MouseLeftButtonDown="RenameMove_MouseLeftButtonDown" />
-                        </StackPanel>
-                   </Grid>
-
-                    <Grid Name="ReplaceActionGrid" 
-                          Grid.Row="1">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="40" />
                             <RowDefinition Height="50" />
@@ -863,12 +820,55 @@
                                               MouseLeftButtonDown="RenameReplace_MouseLeftButtonDown" />
                         </StackPanel>
                     </Grid>
+
+                    <Grid Name="MoveActionGrid" 
+                          Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="125" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="125" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Margin="0,10,0,0"
+                                       Text="Перестановка:"
+                                       VerticalAlignment="Top"/>
+                            <TextBox Name="MoveTextBox" 
+                                      Grid.Column="1"
+                                      TextWrapping="Wrap"                                   
+                                      Text="{Binding MoveTemplate, 
+                                            UpdateSourceTrigger=PropertyChanged,
+                                            Mode=TwoWay}"/>
+                        </Grid>
+
+                        <StackPanel Grid.Row="3"
+                                    Margin="0,10,0,0"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Top">
+                            <local:Controller Purpose="Action"                      
+                                              Command="Предпросмотр"
+                                              MouseLeftButtonDown="PreviewMove_MouseLeftButtonDown" />
+
+                            <local:Controller Margin="10,0,0,0"
+                                              Purpose="Action"                      
+                                              Command="Переименовать"
+                                              MouseLeftButtonDown="RenameMove_MouseLeftButtonDown" />
+                        </StackPanel>
+                    </Grid>
                 </Grid>
 
                 <Grid Name="OtherActionGrid"
                       Visibility="Collapsed">
                     <StackPanel Grid.Row="2" Grid.Column="2"
-                                Margin="0,0,15,15"
+                                Margin="0,5,0,15"
                                 Orientation="Vertical"
                                 HorizontalAlignment="Center">
                         <local:Controller x:Name="GetNoAuthor"

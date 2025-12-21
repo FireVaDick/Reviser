@@ -42,6 +42,7 @@ namespace Reviser
                 };
             }
         }
+
         public double IndicatorWidth
         {
             get

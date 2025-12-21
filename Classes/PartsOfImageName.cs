@@ -31,7 +31,7 @@ namespace Reviser
 
             if (!string.IsNullOrEmpty(result.Author))
             {
-                result.AuthorList = result.Author.Split(new[] { '&', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                result.AuthorList = result.Author.Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries)
                                                  .Select(author => author.Trim())
                                                  .Where(author => !string.IsNullOrEmpty(author))
                                                  .ToList();
@@ -61,7 +61,7 @@ namespace Reviser
 
             if (!string.IsNullOrEmpty(result.Character))
             {
-                result.CharacterList = result.Character.Split(new[] { '&', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                result.CharacterList = result.Character.Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries)
                                                        .Select(character => character.Trim())
                                                        .Where(character => !string.IsNullOrEmpty(character))
                                                        .ToList();
