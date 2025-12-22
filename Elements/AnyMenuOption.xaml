@@ -11,7 +11,8 @@
              FontFamily="pack://application:,,,/Fonts/#v_DistrictTF-Regular"      
              HorizontalAlignment="Stretch" VerticalAlignment="Top"
              Loaded="AnyMenuOption_Loaded"
-             MouseLeftButtonDown="AnyMenuOption_MouseLeftButtonDown" >
+             MouseLeftButtonDown="AnyMenuOption_MouseLeftButtonDown"
+             MouseRightButtonDown="AnyMenuOption_MouseRightButtonDown" >
     <Grid>
         <Rectangle Name="Figure" 
                    StrokeThickness="1"

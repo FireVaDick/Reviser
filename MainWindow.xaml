@@ -90,42 +90,48 @@
                                      Command="1s"
                                      ClickedColor="#EBEBEB"
                                      Width="35"
-                                     MouseLeftButtonDown="Class1s_MouseLeftButtonDown" />
+                                     MouseLeftButtonDown="Class1s_MouseButtonDown" 
+                                     MouseRightButtonDown="Class1s_MouseButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class2e"
                                      GroupName="ClassGroup"
                                      Command="2e"
                                      ClickedColor="#9CFF98"
                                      Width="35"
-                                     MouseLeftButtonDown="Class2e_MouseLeftButtonDown" />
+                                     MouseLeftButtonDown="Class2e_MouseButtonDown" 
+                                     MouseRightButtonDown="Class2e_MouseButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class3n"
                                      GroupName="ClassGroup"
                                      Command="3n"
                                      ClickedColor="#FFFB83"
                                      Width="35"
-                                     MouseLeftButtonDown="Class3n_MouseLeftButtonDown" />
+                                     MouseLeftButtonDown="Class3n_MouseButtonDown" 
+                                     MouseRightButtonDown="Class3n_MouseButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class4c"
                                      GroupName="ClassGroup"
                                      Command="4c"
                                      ClickedColor="#FCB5D7"
                                      Width="35"
-                                     MouseLeftButtonDown="Class4c_MouseLeftButtonDown" />
+                                     MouseLeftButtonDown="Class4c_MouseButtonDown" 
+                                     MouseRightButtonDown="Class4c_MouseButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class5j"
                                      GroupName="ClassGroup"
                                      Command="5j"
                                      ClickedColor="#F8B079"
                                      Width="35"
-                                     MouseLeftButtonDown="Class5j_MouseLeftButtonDown" />
+                                     MouseLeftButtonDown="Class5j_MouseButtonDown" 
+                                     MouseRightButtonDown="Class5j_MouseButtonDown" />
 
                 <local:AnyMenuOption x:Name="Class6h"
                                      GroupName="ClassGroup"
                                      Command="6h"
                                      ClickedColor="#EC6A7A"
                                      Width="35"
-                                     MouseLeftButtonDown="Class6h_MouseLeftButtonDown" />
+                                     MouseLeftButtonDown="Class6h_MouseButtonDown" 
+                                     MouseRightButtonDown="Class6h_MouseButtonDown" />
             </StackPanel>
 
             <Border Grid.Row="1" 
@@ -568,7 +574,7 @@
 
                                 <TextBox Name="CharacterAmountTextBox"
                                          Grid.Column="1"
-                                         Width="50"
+                                         Width="50" 
                                          FontSize="18"
                                          TextAlignment="Center"
                                          VerticalContentAlignment="Center"
@@ -866,22 +872,55 @@
                 </Grid>
 
                 <Grid Name="OtherActionGrid"
-                      Visibility="Collapsed">
-                    <StackPanel Grid.Row="2" Grid.Column="2"
-                                Margin="0,5,0,15"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Center">
-                        <local:Controller x:Name="GetNoAuthor"
-                                          Purpose="Action"                      
-                                          Command="Показать всех без автора"
-                                          MouseLeftButtonDown="GetNoAuthor_MouseLeftButtonDown" />
+                      Visibility="Collapsed"
+                      Margin="10,10,10,15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                        <local:Controller x:Name="CreateFolders"
-                                          Margin="0,10,0,0"
-                                          Purpose="Action"                      
-                                          Command="Раскидать по папкам ориентации"
-                                          MouseLeftButtonDown="CreateFolders_MouseLeftButtonDown" />
-                    </StackPanel>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <local:Controller x:Name="CreateMaxAmountFolders"
+                                      Grid.Row="0" Grid.Column="0"
+                                      Margin="0,10,0,0"
+                                      Purpose="Action"                      
+                                      Command="Раскидать по макс количеству"
+                                      MouseLeftButtonDown="CreateMaxAmountFolders_MouseLeftButtonDown" />
+
+                    <TextBox Name="MaxAmountTextBox"
+                             Grid.Row="0" Grid.Column="1"
+                             Margin="10,11,0,0"
+                             Width="50" Height="35"
+                             FontSize="18"
+                             TextAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Text="{Binding MaxAmountTemplate, 
+                                            UpdateSourceTrigger=PropertyChanged,
+                                            Mode=TwoWay}"/>
+
+                    <local:Controller x:Name="CreateRatioEdgeFolders"
+                                      Grid.Row="1" Grid.Column="0"
+                                      Margin="0,0,0,0"
+                                      Purpose="Action"                      
+                                      Command="Раскидать по ориентации"
+                                      MouseLeftButtonDown="CreateRatioEdgeFolders_MouseLeftButtonDown" />
+
+                    <TextBox Name="RatioEdgeTextBox"
+                             Grid.Row="1" Grid.Column="1"
+                             Margin="10,1,0,0"
+                             Width="50" Height="35"
+                             FontSize="18"
+                             TextAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Text="{Binding RatioEdgeTemplate, 
+                                            UpdateSourceTrigger=PropertyChanged,
+                                            Mode=TwoWay}"/>
+
                 </Grid>
             </Grid>
         </Grid>
@@ -936,14 +975,32 @@
         </Grid>
 
 
-        <TextBlock Name="SelectedFolder"                 
-                   Grid.Row="3" Grid.Column="0"
-                   Visibility="Collapsed"
-                   Grid.ColumnSpan="3"
-                   Margin="0,0,0,10"
-                   Text="Папка не выбрана"
-                   Height="24"  
-                   HorizontalAlignment="Center"
-                   TextAlignment="Left"/>
+        <Grid Grid.Row="2" Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            
+            <TextBlock Name="SelectedFolder"                 
+                       Grid.Row="0"
+                       Text="Папка не выбрана"                     
+                       HorizontalAlignment="Left"
+                       TextAlignment="Left"/>
+
+            <CheckBox Name="IsSearchParent"
+                      Grid.Row="1"
+                      Margin="0,8,0,0"
+                      Checked="IsSearchParent_Checked"
+                      Unchecked="IsSearchParent_Checked" >
+                <TextBlock Margin="2,-1,0,0" 
+                           Text="Искать на уровень выше"/>
+            </CheckBox>
+        </Grid>
+        
+        
+
+
+
+
     </Grid>
 </Window>

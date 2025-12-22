@@ -26,6 +26,9 @@ namespace Reviser
         private string findTemplate = "";
         private string replaceTemplate = "";
 
+        private double ratioEdgeTemplate = 0.15;
+        private int maxAmountTemplate = 100;
+
         private int characterAmountTemplate = 3;
         private int authorAmountTemplate = 3;
         private int tagAmountTemplate = 6;
@@ -65,6 +68,26 @@ namespace Reviser
             set
             {
                 replaceTemplate = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public double RatioEdgeTemplate
+        {
+            get => ratioEdgeTemplate;
+            set
+            {
+                ratioEdgeTemplate = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public int MaxAmountTemplate
+        {
+            get => maxAmountTemplate;
+            set
+            {
+                maxAmountTemplate = value;
                 OnPropertyChanged();
             }
         }
@@ -112,10 +135,16 @@ namespace Reviser
         #endregion
 
 
-        private ObservableCollection<ImageInfoItem> allImageItems = new ObservableCollection<ImageInfoItem>();
-        private ObservableCollection<ImageInfoItem> characterImageItems = new ObservableCollection<ImageInfoItem>();
-        private ObservableCollection<ImageInfoItem> authorImageItems = new ObservableCollection<ImageInfoItem>();
-        private ObservableCollection<ImageInfoItem> tagImageItems = new ObservableCollection<ImageInfoItem>();
+        private ObservableCollection<ImageInfoItem> sourceAllImageItems = new ObservableCollection<ImageInfoItem>();
+        private ObservableCollection<ImageInfoItem> sourceCharacterImageItems = new ObservableCollection<ImageInfoItem>();
+        private ObservableCollection<ImageInfoItem> sourceAuthorImageItems = new ObservableCollection<ImageInfoItem>();
+        private ObservableCollection<ImageInfoItem> sourceTagImageItems = new ObservableCollection<ImageInfoItem>();
+              
+        private ObservableCollection<ImageInfoItem> classedAllImageItems = new ObservableCollection<ImageInfoItem>();
+        private ObservableCollection<ImageInfoItem> classedCharacterImageItems = new ObservableCollection<ImageInfoItem>();
+        private ObservableCollection<ImageInfoItem> classedAuthorImageItems = new ObservableCollection<ImageInfoItem>();
+        private ObservableCollection<ImageInfoItem> classedTagImageItems = new ObservableCollection<ImageInfoItem>();
+              
         private ObservableCollection<ImageNewName> moveImageFiles = new ObservableCollection<ImageNewName>();
         private ObservableCollection<ImageNewName> replaceImageFiles = new ObservableCollection<ImageNewName>();
 
@@ -124,7 +153,11 @@ namespace Reviser
         private Dictionary<string, int> tagStatistics = new Dictionary<string, int>();
 
         private CancellationTokenSource cancellationTokenSource;
+        private static string firstFilePath;
         private static string directoryPath;
+
+        private List<string> enabledClasses = new List<string> { "1s", "2e", "3n", "4c", "5j", "6h" };
+        private DataGrid currentDataGrid;
 
 
 
@@ -136,12 +169,15 @@ namespace Reviser
             this.Left = (SystemParameters.FullPrimaryScreenWidth - this.Width) / 2;
             this.Top = (SystemParameters.FullPrimaryScreenHeight - this.Height) / 2;
 
-            AllDataGrid.ItemsSource = allImageItems;
-            CharacterDataGrid.ItemsSource = characterImageItems;
-            AuthorDataGrid.ItemsSource = authorImageItems;
-            TagDataGrid.ItemsSource = tagImageItems;
+            AllDataGrid.ItemsSource = classedAllImageItems;
+            CharacterDataGrid.ItemsSource = classedCharacterImageItems;
+            AuthorDataGrid.ItemsSource = classedAuthorImageItems;
+            TagDataGrid.ItemsSource = classedTagImageItems;
+
             MoveDataGrid.ItemsSource = moveImageFiles;
             ReplaceDataGrid.ItemsSource = replaceImageFiles;
+
+            currentDataGrid = AllDataGrid;
 
             SetTimers(2);
 
@@ -200,25 +236,6 @@ namespace Reviser
 
 
 
-        #region Фильтры ComboBox
-        private void CharacterFilterTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            UpdateCharacterList();
-        }
-
-        private void AuthorFilterTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            UpdateAuthorList();
-        }
-
-        private void TagFilterTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            UpdateTagList();
-        }
-        #endregion
-
-
-
         #region Горячие клавиши
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
@@ -233,35 +250,382 @@ namespace Reviser
 
 
 
+        #region Главные методы
+        private void ChooseImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            GetImageDirectory();
+        }
+
+        private void IsSearchParent_Checked(object sender, RoutedEventArgs e)
+        {
+            FindDirectory();
+        }
+
+        private async void LoadFullTable_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            await LoadTable(true);
+        }
+
+        private void CleanEverything_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Clean();
+        }
+
+        private void Cancel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            cancellationTokenSource?.Cancel();
+        }
+        #endregion
+
+
+
+        #region Реализация главных методов
+        private void GetImageDirectory()
+        {
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            bool? success = fileDialog.ShowDialog();
+
+            if (success == true)
+            {
+                Clean();
+
+                firstFilePath = Path.GetDirectoryName(fileDialog.FileName);
+                FindDirectory();
+            }
+        }
+
+        private void FindDirectory()
+        {
+            if (!string.IsNullOrEmpty(firstFilePath))
+            {
+                if (IsSearchParent != null && IsSearchParent.IsChecked == true)
+                {
+                    string parentPath = Directory.GetParent(firstFilePath)?.FullName;
+
+                    if (!string.IsNullOrEmpty(parentPath) && Directory.Exists(parentPath))
+                    {
+                        directoryPath = parentPath;
+                        SelectedFolder.Text = directoryPath;
+                    }
+                }
+                else
+                {
+                    directoryPath = firstFilePath;
+                    SelectedFolder.Text = directoryPath;
+                }
+            }
+        }
+
+        private async Task LoadTable(bool isFullLoad)
+        {
+            if (string.IsNullOrEmpty(directoryPath))
+            {
+                MessageBox.Show("Сначала выберите папку с изображениями");
+                return;
+            }
+
+            cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
+
+            LoadFullTable.IsEnabled = false;
+            Cancel.Visibility = Visibility.Visible;
+
+            try
+            {
+                await LoadImagesAsync(directoryPath, isFullLoad, true, cancellationToken);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    MessageBox.Show("Загрузка отменена");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке: {ex.Message}");
+            }
+            finally
+            {
+                LoadFullTable.IsEnabled = true;
+                Cancel.Visibility = Visibility.Collapsed;
+
+                cancellationTokenSource?.Dispose();
+                cancellationTokenSource = null;
+            }
+        }
+
+        private async Task LoadImagesAsync(string searchFolder, bool isFullLoad, bool isRecursive, CancellationToken cancellationToken)
+        {
+            string[] filters = new string[] { "jpg", "jpeg", "png", "gif" };
+            var filePaths = GetFilePaths(searchFolder, filters, isRecursive);
+
+            for (int i = 0; i < filePaths.Count; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var path = filePaths[i];
+                var item = await Task.Run(() => SetImageInfo(path, i + 1, isFullLoad, cancellationToken), cancellationToken);
+
+                UpdateCharacterStatistics(item);
+                UpdateAuthorStatistics(item);
+                UpdateTagStatistics(item);
+
+                await UpdateUIWithItem(item);
+            }
+        }
+
+        private List<string> GetFilePaths(string folder, string[] filters, bool recursive)
+        {
+            var filePaths = new List<string>();
+            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+            foreach (var filter in filters)
+            {
+                filePaths.AddRange(Directory.GetFiles(folder, $"*.{filter}", searchOption));
+            }
+
+            return filePaths;
+        }
+
+        private async Task UpdateUIWithItem(ImageInfoItem item)
+        {
+            await Dispatcher.InvokeAsync(() =>
+            {
+                sourceAllImageItems.Add(item);
+
+                if (enabledClasses.Contains(item.Class))
+                {
+                    var classedItem = new ImageInfoItem
+                    {
+                        Index = classedAllImageItems.Count + 1,
+                        FileName = item.FileName,
+                        FilePath = item.FilePath,
+                        Resolution = item.Resolution,
+                        AspectRatio = item.AspectRatio,
+                        FileSize = item.FileSize,
+                        Format = item.Format,
+                        Character = item.Character,
+                        Author = item.Author,
+                        Class = item.Class,
+                        Number = item.Number,
+                        Tags = item.Tags,
+                        CharacterList = item.CharacterList,
+                        AuthorList = item.AuthorList,
+                        TagList = item.TagList,
+                    };
+
+                    classedAllImageItems.Add(classedItem);
+                }
+
+                UpdateCountText();
+            });
+        }
+
+        private ImageInfoItem SetImageInfo(string fullPath, int index, bool isFullLoad, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                var fileInfo = new FileInfo(fullPath);
+                string fileName = Path.GetFileName(fullPath);
+
+                using (var fs = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var image = System.Drawing.Image.FromStream(fs))
+                {
+                    int width = image.Width;
+                    int height = image.Height;
+
+                    string format = image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Jpeg) ? "JPG" :
+                                    image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Png) ? "PNG" :
+                                    image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Gif) ? "GIF" : "Unknown";
+
+                    var partsOfImageName = PartsOfImageName.ParseImageNameIntoParts(fileName);
+
+                    return new ImageInfoItem
+                    {
+                        Index = index,
+                        FileName = fileName,
+                        FilePath = fullPath,
+                        Resolution = $"{width}x{height}",
+                        AspectRatio = (height / (double)width).ToString("F3"),
+                        FileSize = FormatFileSize(fileInfo.Length),
+                        Format = format,
+                        Character = partsOfImageName.Character,
+                        Author = partsOfImageName.Author,
+                        Class = partsOfImageName.Class,
+                        Number = partsOfImageName.Number,
+                        Tags = partsOfImageName.Tags,
+                        CharacterList = partsOfImageName.CharacterList,
+                        AuthorList = partsOfImageName.AuthorList,
+                        TagList = partsOfImageName.TagList
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                // Логируем ошибку, но не падаем
+                return new ImageInfoItem
+                {
+                    Index = index,
+                    FileName = Path.GetFileName(fullPath) + " (ошибка)",
+                    FilePath = fullPath,
+                    Resolution = "—",
+                    AspectRatio = "—",
+                    FileSize = "—",
+                    Format = "Ошибка"
+                };
+            }
+        }
+
+        private void Clean()
+        {
+            sourceAllImageItems.Clear();
+            sourceCharacterImageItems.Clear();
+            sourceAuthorImageItems.Clear();
+            sourceTagImageItems.Clear();
+
+            classedAllImageItems.Clear();
+            classedCharacterImageItems.Clear();
+            classedAuthorImageItems.Clear();
+            classedTagImageItems.Clear();
+
+            moveImageFiles.Clear();
+            replaceImageFiles.Clear();
+
+            AllDataGrid.Items.Refresh();
+            CharacterDataGrid.Items.Refresh();
+            AuthorDataGrid.Items.Refresh();
+            TagDataGrid.Items.Refresh();
+            MoveDataGrid.Items.Refresh();
+            ReplaceDataGrid.Items.Refresh();
+
+            characterStatistics.Clear();
+            authorStatistics.Clear();
+            tagStatistics.Clear();
+
+            CharacterWrapPanel.Children.Clear();
+            AuthorWrapPanel.Children.Clear();
+            TagWrapPanel.Children.Clear();
+
+            Count.Text = "Всего: 0";
+            ClearImagePreview();
+        }
+        #endregion
+
+
+
         #region Переключатели ClassGroup
-        private void Class1s_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Class1s_MouseButtonDown(object sender, MouseButtonEventArgs e)
         {
-
+            HandleClassClick("1s", e.ChangedButton);
+        }
+        private void Class2e_MouseButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            HandleClassClick("2e", e.ChangedButton);
         }
 
-        private void Class2e_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Class3n_MouseButtonDown(object sender, MouseButtonEventArgs e)
         {
-
+            HandleClassClick("3n", e.ChangedButton);
         }
 
-        private void Class3n_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Class4c_MouseButtonDown(object sender, MouseButtonEventArgs e)
         {
-
+            HandleClassClick("4c", e.ChangedButton);
         }
 
-        private void Class4c_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Class5j_MouseButtonDown(object sender, MouseButtonEventArgs e)
         {
-
+            HandleClassClick("5j", e.ChangedButton);
         }
 
-        private void Class5j_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Class6h_MouseButtonDown(object sender, MouseButtonEventArgs e)
         {
-
+            HandleClassClick("6h", e.ChangedButton);
         }
 
-        private void Class6h_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void HandleClassClick(string className, MouseButton mouseButton)
         {
+            if (mouseButton == MouseButton.Right)
+            {
+                enabledClasses.Clear();
+                enabledClasses.Add(className);
+            }
+            else if (mouseButton == MouseButton.Left)
+            {
+                if (enabledClasses.Contains(className))
+                {
+                    enabledClasses.Remove(className);
+                }
+                else enabledClasses.Add(className);
+            }
 
+            RefreshCurrentDataGrid();
+        }
+
+        private void RefreshCurrentDataGrid()
+        {
+            if (currentDataGrid == null) return;
+
+            var sourceCollection = GetSourceCollectionForDataGrid(currentDataGrid);
+            var classedCollection = GetClassedCollectionForDataGrid(currentDataGrid);
+
+            if (sourceCollection == null || classedCollection == null) return;
+
+            classedCollection.Clear();
+
+            if (sourceCollection.Count == 0) return;
+
+            var filteredItems = sourceCollection
+                .Where(item => enabledClasses.Contains(item.Class))
+                .ToList();
+
+            for (int i = 0; i < filteredItems.Count; i++)
+            {
+                var classedItem = new ImageInfoItem
+                {
+                    Index = i + 1,
+                    FileName = filteredItems[i].FileName,
+                    FilePath = filteredItems[i].FilePath,
+                    Resolution = filteredItems[i].Resolution,
+                    AspectRatio = filteredItems[i].AspectRatio,
+                    FileSize = filteredItems[i].FileSize,
+                    Format = filteredItems[i].Format,
+                    Character = filteredItems[i].Character,
+                    Author = filteredItems[i].Author,
+                    Class = filteredItems[i].Class,
+                    Number = filteredItems[i].Number,
+                    Tags = filteredItems[i].Tags,
+                    CharacterList = filteredItems[i].CharacterList,
+                    AuthorList = filteredItems[i].AuthorList,
+                    TagList = filteredItems[i].TagList,
+                };
+
+                classedCollection.Add(classedItem);
+            }
+
+            UpdateCountText();
+        }
+
+        private ObservableCollection<ImageInfoItem> GetSourceCollectionForDataGrid(DataGrid dataGrid)
+        {
+            if (dataGrid == AllDataGrid) return sourceAllImageItems;
+            if (dataGrid == CharacterDataGrid) return sourceCharacterImageItems;
+            if (dataGrid == AuthorDataGrid) return sourceAuthorImageItems;
+            if (dataGrid == TagDataGrid) return sourceTagImageItems;
+            return null;
+        }
+
+        private ObservableCollection<ImageInfoItem> GetClassedCollectionForDataGrid(DataGrid dataGrid)
+        {
+            if (dataGrid == AllDataGrid) return classedAllImageItems;
+            if (dataGrid == CharacterDataGrid) return classedCharacterImageItems;
+            if (dataGrid == AuthorDataGrid) return classedAuthorImageItems;
+            if (dataGrid == TagDataGrid) return classedTagImageItems;
+            return null;
         }
         #endregion
 
@@ -288,6 +652,9 @@ namespace Reviser
             if (dataGridToShow != null)
             {
                 dataGridToShow.Visibility = Visibility.Visible;
+                currentDataGrid = dataGridToShow;
+
+                RefreshCurrentDataGrid();
             }
         }
 
@@ -373,215 +740,6 @@ namespace Reviser
         private void ShowOtherActionGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ShowCurrentActionGrid(OtherActionGrid);
-        }
-        #endregion
-
-
-
-        #region Главные методы
-        private void ChooseImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            GetImageDirectory();
-        }
-
-        private async void LoadFullTable_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            await LoadTable(true);
-        }
-
-        private void CleanEverything_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Clean();
-        }
-
-        private void Cancel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            cancellationTokenSource?.Cancel();
-        }
-        #endregion
-
-
-
-        #region Реализация главных методов
-        private void GetImageDirectory()
-        {
-            OpenFileDialog fileDialog = new OpenFileDialog();
-            bool? success = fileDialog.ShowDialog();
-
-            if (success == true)
-            {
-                Clean();
-
-                directoryPath = Path.GetDirectoryName(fileDialog.FileName);          
-                SelectedFolder.Text = directoryPath;
-            }
-        }
-
-        private async Task LoadTable(bool isFullLoad)
-        {
-            if (string.IsNullOrEmpty(directoryPath))
-            {
-                MessageBox.Show("Сначала выберите папку с изображениями");
-                return;
-            }
-
-            cancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = cancellationTokenSource.Token;
-
-            LoadFullTable.IsEnabled = false;
-            Cancel.Visibility = Visibility.Visible;
-
-            try
-            {
-                await LoadImagesAsync(directoryPath, isFullLoad, false, cancellationToken);
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    MessageBox.Show("Загрузка отменена");
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при загрузке: {ex.Message}");
-            }
-            finally
-            {
-                LoadFullTable.IsEnabled = true;
-                Cancel.Visibility = Visibility.Collapsed;
-
-                cancellationTokenSource?.Dispose();
-                cancellationTokenSource = null;
-            }
-        }
-
-        private async Task LoadImagesAsync(string searchFolder, bool isFullLoad, bool isRecursive, CancellationToken cancellationToken)
-        {
-            string[] filters = new string[] { "jpg", "jpeg", "png", "gif" };
-            var filePaths = GetFilePaths(searchFolder, filters, isRecursive);
-
-            for (int i = 0; i < filePaths.Count; i++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var path = filePaths[i];
-                var item = await Task.Run(() => SetImageInfo(path, i + 1, isFullLoad, cancellationToken), cancellationToken);
-
-                UpdateCharacterStatistics(item);
-                UpdateAuthorStatistics(item);
-                UpdateTagStatistics(item);
-
-                await UpdateUIWithItem(item);
-            }
-        }
-
-        private List<string> GetFilePaths(string folder, string[] filters, bool recursive)
-        {
-            var filePaths = new List<string>();
-            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-
-            foreach (var filter in filters)
-            {
-                filePaths.AddRange(Directory.GetFiles(folder, $"*.{filter}", searchOption));
-            }
-
-            return filePaths;
-        }
-
-        private async Task UpdateUIWithItem(ImageInfoItem item)
-        {
-            await Dispatcher.InvokeAsync(() =>
-            {
-                allImageItems.Add(item);
-                Count.Text = "Всего: " + allImageItems.Count.ToString();
-            });
-        }
-
-        private ImageInfoItem SetImageInfo(string fullPath, int index, bool isFullLoad, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                var fileInfo = new FileInfo(fullPath);
-                string fileName = Path.GetFileName(fullPath);
-
-                using (var fs = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (var image = System.Drawing.Image.FromStream(fs))
-                {
-                    int width = image.Width;
-                    int height = image.Height;
-
-                    string format = image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Jpeg) ? "JPG" :
-                                    image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Png) ? "PNG" :
-                                    image.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Gif) ? "GIF" : "Unknown";
-                    
-                    var partsOfImageName = PartsOfImageName.ParseImageNameIntoParts(fileName);
-
-                    return new ImageInfoItem
-                    {
-                        Index = index,
-                        FileName = fileName,
-                        FilePath = fullPath,
-                        Resolution = $"{width}x{height}",
-                        AspectRatio = (height / (double)width).ToString("F3"),
-                        FileSize = FormatFileSize(fileInfo.Length),
-                        Format = format,
-                        Character = partsOfImageName.Character,
-                        Author = partsOfImageName.Author,
-                        Class = partsOfImageName.Class,
-                        Number = partsOfImageName.Number,
-                        Tags = partsOfImageName.Tags,
-                        CharacterList = partsOfImageName.CharacterList,
-                        AuthorList = partsOfImageName.AuthorList,
-                        TagList = partsOfImageName.TagList
-                    };
-                }
-            }
-            catch (Exception)
-            {
-                // Логируем ошибку, но не падаем
-                return new ImageInfoItem
-                {
-                    Index = index,
-                    FileName = Path.GetFileName(fullPath) + " (ошибка)",
-                    FilePath = fullPath,
-                    Resolution = "—",
-                    AspectRatio = "—",
-                    FileSize = "—",
-                    Format = "Ошибка"
-                };
-            }
-        }
-
-        private void Clean()
-        {
-            allImageItems.Clear();
-            characterImageItems.Clear();
-            authorImageItems.Clear();
-            tagImageItems.Clear();
-            moveImageFiles.Clear();
-            replaceImageFiles.Clear();
-
-            AllDataGrid.Items.Refresh();
-            CharacterDataGrid.Items.Refresh();
-            AuthorDataGrid.Items.Refresh();
-            TagDataGrid.Items.Refresh();
-            MoveDataGrid.Items.Refresh();
-            ReplaceDataGrid.Items.Refresh();
-
-            characterStatistics.Clear();
-            authorStatistics.Clear();
-            tagStatistics.Clear();
-
-            CharacterWrapPanel.Children.Clear();
-            AuthorWrapPanel.Children.Clear();
-            TagWrapPanel.Children.Clear();
-
-            Count.Text = "Всего: 0";
-            ClearImagePreview();
         }
         #endregion
 
@@ -677,18 +835,20 @@ namespace Reviser
         }
 
         private void FilterAndShowItems(string filterName,
-                               ObservableCollection<ImageInfoItem> targetCollection,
-                               Func<ImageInfoItem, bool> filterPredicate,
-                               OneMenuOption showDataGridControl,
-                               DataGrid targetDataGrid)
+                                        ObservableCollection<ImageInfoItem> targetSourceCollection,
+                                        Func<ImageInfoItem, bool> filterPredicate,
+                                        OneMenuOption showDataGridControl,
+                                        DataGrid targetDataGrid)
         {
-            targetCollection.Clear();
-            var filteredItems = allImageItems.Where(filterPredicate).ToList();
+            targetSourceCollection.Clear();
 
-            for (int i = 0; i < filteredItems.Count; i++)
+            var filteredItems = sourceAllImageItems
+                .Where(filterPredicate)
+                .ToList();
+
+            foreach (var item in filteredItems)
             {
-                filteredItems[i].Index = i + 1;
-                targetCollection.Add(filteredItems[i]);
+                targetSourceCollection.Add(item);
             }
 
             var args = new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
@@ -720,7 +880,7 @@ namespace Reviser
         {
             if (sender is TextBlock textButton && textButton.Tag is string characterName)
             {
-                FilterAndShowItems(characterName, characterImageItems,
+                FilterAndShowItems(characterName, sourceCharacterImageItems,
                     i => i.CharacterList?.Contains(characterName) == true,
                     ShowCharacterDataGrid, CharacterDataGrid);
             }
@@ -745,7 +905,7 @@ namespace Reviser
         {
             if (sender is TextBlock textButton && textButton.Tag is string authorName)
             {
-                FilterAndShowItems(authorName, authorImageItems,
+                FilterAndShowItems(authorName, sourceAuthorImageItems,
                     i => i.AuthorList?.Contains(authorName) == true,
                     ShowAuthorDataGrid, AuthorDataGrid);
             }
@@ -770,7 +930,7 @@ namespace Reviser
         {
             if (sender is TextBlock textButton && textButton.Tag is string tagName)
             {
-                FilterAndShowItems(tagName, tagImageItems, 
+                FilterAndShowItems(tagName, sourceTagImageItems, 
                     i => i.TagList?.Contains(tagName) == true, 
                     ShowTagDataGrid, TagDataGrid);
             }
@@ -779,165 +939,116 @@ namespace Reviser
 
 
 
-        #region Дополнительные действия
-        private void GetNoAuthor_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        #region Фильтры ComboBox
+        private void CharacterFilterTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var itemsToRemove = new List<ImageInfoItem>();
-
-            foreach (var item in allImageItems)
-            {
-                string fileName = item.FileName;
-
-                // 1. Если есть "Work" — удаляем
-                if (fileName.IndexOf("Work", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    itemsToRemove.Add(item);
-                    continue;
-                }
-
-                // 2. Проверяем наличие автора в квадратных скобках: [...]
-                int openBracket = fileName.IndexOf('[');
-                int closeBracket = -1;
-
-                if (openBracket > -1)
-                    closeBracket = fileName.IndexOf(']', openBracket);
-
-                if (openBracket >= 0 && closeBracket > openBracket)
-                {
-                    // Найдена конструкция [что-то] → есть автор
-                    itemsToRemove.Add(item);
-                }
-            }
-
-            // Удаляем ненужные элементы из ObservableCollection
-            foreach (var item in itemsToRemove)
-            {
-                allImageItems.Remove(item);
-            }
-
-            // Переиндексируем оставшиеся элементы
-            for (int i = 0; i < allImageItems.Count; i++)
-            {
-                allImageItems[i].Index = i + 1;
-            }
+            UpdateCharacterList();
         }
 
-        private void CreateFolders_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void AuthorFilterTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (string.IsNullOrEmpty(directoryPath))
-            {
-                MessageBox.Show("Сначала выберите папку с изображениями");
-                return;
-            }
+            UpdateAuthorList();
+        }
 
-            if (allImageItems.Count == 0)
-            {
-                MessageBox.Show("Сначала загрузите таблицу изображений", "Информация",
-                               MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
+        private void TagFilterTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateTagList();
+        }
+        #endregion
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        #region Дополнительные действия
+        private void CreateRatioEdgeFolders_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
             // Создаем подпапки
             string portraitPath = Path.Combine(directoryPath, "Portrait");
             string landscapePath = Path.Combine(directoryPath, "Landscape");
             string squarePath = Path.Combine(directoryPath, "Square");
 
-            Directory.CreateDirectory(portraitPath);
-            Directory.CreateDirectory(landscapePath);
-            Directory.CreateDirectory(squarePath);
-
-            int movedCount = 0;
-            int errorCount = 0;
-            int alreadySortedCount = 0;
-
-            foreach (var item in allImageItems)
-            {
-                try
+            // Используем базовый класс
+            var result = FolderOperation.MoveFilesToFolders(
+                classedAllImageItems,
+                directoryPath,
+                (item, index) =>
                 {
-                    // Проверяем, существует ли файл
-                    if (!File.Exists(item.FilePath))
-                    {
-                        errorCount++;
-                        continue;
-                    }
-
-                    // Проверяем, не находится ли файл уже в одной из целевых папок
-                    string currentDir = Path.GetDirectoryName(item.FilePath);
-                    if (currentDir == portraitPath || currentDir == landscapePath || currentDir == squarePath)
-                    {
-                        alreadySortedCount++;
-                        continue;
-                    }
-
-                    // Получаем соотношение сторон из уже рассчитанных данных
                     if (double.TryParse(item.AspectRatio.Replace('.', ','), out double aspectRatio))
                     {
-                        string destinationFolder;
+                        double edge = RatioEdgeTemplate;
 
-                        if (aspectRatio < 0.85)
-                            destinationFolder = landscapePath;
-                        else if (aspectRatio > 1.15)
-                            destinationFolder = portraitPath;
+                        if (aspectRatio < (1 - edge))
+                            return landscapePath;
+                        else if (aspectRatio > (1 + edge))
+                            return portraitPath;
                         else
-                            destinationFolder = squarePath;
-
-                        // Проверяем, не перемещаем ли мы в ту же папку
-                        if (Path.GetDirectoryName(item.FilePath).Equals(destinationFolder, StringComparison.OrdinalIgnoreCase))
-                        {
-                            alreadySortedCount++;
-                            continue;
-                        }
-
-                        string fileName = Path.GetFileName(item.FilePath);
-                        string destPath = Path.Combine(destinationFolder, fileName);
-
-                        // Если файл уже существует в папке назначения, переименуем
-                        if (File.Exists(destPath))
-                        {
-                            string nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
-                            string extension = Path.GetExtension(fileName);
-                            int counter = 1;
-                            do
-                            {
-                                destPath = Path.Combine(destinationFolder, $"{nameWithoutExt}_{counter}{extension}");
-                                counter++;
-                            } while (File.Exists(destPath));
-                        }
-
-                        // Перемещаем файл
-                        File.Move(item.FilePath, destPath);
-
-                        // Обновляем путь в элементе таблицы
-                        item.FilePath = destPath;
-                        movedCount++;
+                            return squarePath;
                     }
-                    else
-                    {
-                        errorCount++;
-                        Debug.WriteLine($"Не удалось распознать соотношение сторон для файла: {item.FileName}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    errorCount++;
-                    Debug.WriteLine($"Не удалось переместить файл {item.FileName}: {ex.Message}");
-                }
-            }
+                    return squarePath; // По умолчанию
+                });
 
-            // Обновляем отображение таблицы (опционально)
-            // Можно перезагрузить таблицу, чтобы увидеть новые пути
-            if (MessageBox.Show($"Сортировка завершена!\n\n" +
-                               $"Перемещено файлов: {movedCount}\n" +
-                               $"Уже отсортировано: {alreadySortedCount}\n" +
-                               $"Ошибок: {errorCount}\n\n" +
-                               $"Обновить текущую таблицу?",
-                               "Информация",
-                               MessageBoxButton.YesNo,
-                               MessageBoxImage.Information) == MessageBoxResult.Yes)
+            ShowResultMessage("Сортировка по соотношению сторон завершена!", result);
+        }
+
+        private void CreateMaxAmountFolders_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (MaxAmountTemplate <= 0)
             {
-                // Перезагружаем таблицу
-                _ = LoadTable(true);
+                MessageBox.Show("Максимальное количество файлов в папке должно быть больше 0", "Ошибка",
+                               MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
+
+            int totalFiles = classedAllImageItems.Count;
+            int foldersCount = (int)Math.Ceiling((double)totalFiles / MaxAmountTemplate);
+
+            // Создаем папки заранее
+            List<string> folders = new List<string>();
+            for (int i = 0; i < foldersCount; i++)
+            {
+                int startNum = i * MaxAmountTemplate + 1;
+                int endNum = Math.Min((i + 1) * MaxAmountTemplate, totalFiles);
+                string folderName = $"{startNum}-{endNum}";
+                string folderPath = Path.Combine(directoryPath, folderName);
+
+                Directory.CreateDirectory(folderPath);
+                folders.Add(folderPath);
+            }
+
+            // Используем базовый класс
+            var result = FolderOperation.MoveFilesToFolders(
+                classedAllImageItems,
+                directoryPath,
+                (item, index) =>
+                {
+                    int folderIndex = index / MaxAmountTemplate;
+                    return folders[folderIndex];
+                });
+
+            ShowResultMessage($"Сортировка по количеству файлов завершена!\nСоздано папок: {foldersCount}", result);
+        }
+
+        private void ShowResultMessage(string title, (int movedCount, int errorCount, int alreadySortedCount) result)
+        {
+            MessageBox.Show($"{title}\n\n" +
+                               $"Перемещено файлов: {result.movedCount}\n" +
+                               $"Уже отсортировано: {result.alreadySortedCount}\n" +
+                               $"Ошибок: {result.errorCount}\n\n" +
+                               $"Сейчас таблица будет очищена",
+                               "Информация",
+                               MessageBoxButton.OK);
+            Clean();
         }
         #endregion
 
@@ -1159,7 +1270,7 @@ namespace Reviser
         {
             try
             {
-                string fullPath = Path.Combine(directoryPath, item.FileName);
+                string fullPath = item.FilePath;
 
                 if (File.Exists(fullPath))
                 {
@@ -1273,11 +1384,12 @@ namespace Reviser
             }
 
             var selectedItem = grid.SelectedItem as ImageInfoItem;
-            if (selectedItem != null && !string.IsNullOrEmpty(directoryPath))
+
+            if (selectedItem != null)
             {
                 try
                 {
-                    string fullPath = Path.Combine(directoryPath, selectedItem.FileName);
+                    string fullPath = selectedItem.FileName;
                     if (File.Exists(fullPath))
                     {
                         Process.Start(new ProcessStartInfo
@@ -1288,14 +1400,12 @@ namespace Reviser
                     }
                     else
                     {
-                        MessageBox.Show("Файл не найден", "Ошибка",
-                                      MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Файл не найден", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка при открытии файла: {ex.Message}", "Ошибка",
-                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Ошибка при открытии файла: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -1304,6 +1414,16 @@ namespace Reviser
 
 
         #region Вспомогательные
+        private void UpdateCountText()
+        {
+            if (currentDataGrid == null) return;
+
+            var classedCollection = GetClassedCollectionForDataGrid(currentDataGrid);
+            if (classedCollection == null) return;
+
+            Count.Text = $"Всего: {classedCollection.Count}";
+        }
+
         private static string FormatFileSize(long bytes)
         {
             string[] sizes = { "B", "KB", "MB", "GB" };
@@ -1331,6 +1451,84 @@ namespace Reviser
         }
         #endregion
     }
+
+
+
+    #region Класс для работы с папками
+    public class FolderOperation
+    {
+        public static (int movedCount, int errorCount, int alreadySortedCount) MoveFilesToFolders(
+                       IEnumerable<ImageInfoItem> items,
+                       string baseDirectory,
+                       Func<ImageInfoItem, int, string> getFolderNameFunc,
+                       Func<ImageInfoItem, string, string> getFileNameFunc = null)
+        {
+            int movedCount = 0;
+            int errorCount = 0;
+            int alreadySortedCount = 0;
+
+            foreach (var item in items)
+            {
+                try
+                {
+                    if (!File.Exists(item.FilePath))
+                    {
+                        errorCount++;
+                        continue;
+                    }
+
+                    string fileName = Path.GetFileName(item.FilePath);
+                    string currentDir = Path.GetDirectoryName(item.FilePath);
+                    string destinationFolder = getFolderNameFunc(item, items.ToList().IndexOf(item));
+
+                    // Создаем папку, если её нет
+                    Directory.CreateDirectory(destinationFolder);
+
+                    // Проверяем, не находится ли файл уже в целевой папке
+                    if (currentDir.Equals(destinationFolder, StringComparison.OrdinalIgnoreCase))
+                    {
+                        alreadySortedCount++;
+                        continue;
+                    }
+
+                    // Получаем имя файла (может быть изменено)
+                    string newFileName = getFileNameFunc != null
+                        ? getFileNameFunc(item, fileName)
+                        : fileName;
+
+                    string destPath = Path.Combine(destinationFolder, newFileName);
+
+                    // Если файл уже существует в папке назначения, переименуем
+                    if (File.Exists(destPath))
+                    {
+                        string nameWithoutExt = Path.GetFileNameWithoutExtension(newFileName);
+                        string extension = Path.GetExtension(newFileName);
+                        int counter = 1;
+                        do
+                        {
+                            destPath = Path.Combine(destinationFolder, $"{nameWithoutExt}_{counter}{extension}");
+                            counter++;
+                        } while (File.Exists(destPath));
+                    }
+
+                    // Перемещаем файл
+                    File.Move(item.FilePath, destPath);
+
+                    // Обновляем путь в элементе таблицы
+                    item.FilePath = destPath;
+                    movedCount++;
+                }
+                catch (Exception ex)
+                {
+                    errorCount++;
+                    Debug.WriteLine($"Не удалось переместить файл {item.FileName}: {ex.Message}");
+                }
+            }
+
+            return (movedCount, errorCount, alreadySortedCount);
+        }
+    }
+    #endregion
 
 
 

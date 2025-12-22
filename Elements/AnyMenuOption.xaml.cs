@@ -13,7 +13,7 @@ namespace Reviser
         public static readonly DependencyProperty ClickedColorProperty = DependencyProperty.Register("ClickedColor", typeof(Brush), typeof(AnyMenuOption), new PropertyMetadata(null));
         public static readonly DependencyProperty TextColorProperty = DependencyProperty.Register("TextColor", typeof(Brush), typeof(AnyMenuOption), new PropertyMetadata(Brushes.Black));
         public static readonly DependencyProperty CommandProperty = DependencyProperty.Register("Command", typeof(string), typeof(AnyMenuOption), new PropertyMetadata(null));   
-        public static readonly DependencyProperty IsCheckedProperty = DependencyProperty.Register("IsChecked", typeof(bool), typeof(AnyMenuOption), new PropertyMetadata(false));
+        public static readonly DependencyProperty IsCheckedProperty = DependencyProperty.Register("IsChecked", typeof(bool), typeof(AnyMenuOption), new PropertyMetadata(true));
         public static readonly DependencyProperty GroupNameProperty = DependencyProperty.Register("GroupName", typeof(string), typeof(AnyMenuOption), new PropertyMetadata(""));
 
         public Brush BackColor
@@ -83,11 +83,44 @@ namespace Reviser
                 anyMenuOption.UpdateVisualState(anyMenuOption);
             }
         }
+
+        private void AnyMenuOption_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is AnyMenuOption anyMenuOption && anyMenuOption.isLoaded)
+            {
+                if (!anyMenuOption.IsChecked)
+                    anyMenuOption.IsChecked = !anyMenuOption.IsChecked;
+
+                anyMenuOption.UncheckOthers(anyMenuOption.GroupName);
+                anyMenuOption.UpdateVisualState(anyMenuOption);
+            }
+        }
         #endregion
 
 
 
         #region Смена выбранного элемента
+        private void UncheckOthers(string groupName)
+        {
+            if (!string.IsNullOrEmpty(groupName))
+            {
+                if (Parent is Panel parentPanel)
+                {
+                    foreach (var child in parentPanel.Children)
+                    {
+                        if (child is AnyMenuOption otherAnyMenuOption &&
+                            otherAnyMenuOption != this &&
+                            otherAnyMenuOption.GroupName == groupName)
+                        {
+                            otherAnyMenuOption.IsChecked = false;
+
+                            UpdateVisualState(otherAnyMenuOption);
+                        }
+                    }
+                }
+            }
+        }
+
         private void UpdateVisualState(AnyMenuOption anyMenuOption)
         {
             if (anyMenuOption.IsChecked)
