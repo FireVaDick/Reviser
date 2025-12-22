@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using Reviser.Classes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,7 +15,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using Point = System.Windows.Point;
 
 namespace Reviser
 {
@@ -956,18 +954,6 @@ namespace Reviser
             UpdateTagList();
         }
         #endregion
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -6,15 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Reviser.Classes
+namespace Reviser
 {
     class FolderOperation
     {
         public static (int movedCount, int errorCount, int alreadySortedCount) MoveFilesToFolders(
-                       IEnumerable<ImageInfoItem> items,
-                       string baseDirectory,
-                       Func<ImageInfoItem, int, string> getFolderNameFunc,
-                       Func<ImageInfoItem, string, string> getFileNameFunc = null)
+        IEnumerable<ImageInfoItem> items,
+        string baseDirectory,
+        Func<ImageInfoItem, int, string> getFolderNameFunc,
+        Func<ImageInfoItem, string, string> getFileNameFunc = null)
         {
             int movedCount = 0;
             int errorCount = 0;

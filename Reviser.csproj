@@ -57,6 +57,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Classes\FolderOperation.cs" />
     <Compile Include="Elements\AnyMenuOption.xaml.cs">
       <DependentUpon>AnyMenuOption.xaml</DependentUpon>
     </Compile>
