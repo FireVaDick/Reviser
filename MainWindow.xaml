@@ -76,14 +76,14 @@
       
         <!-- Левый столбик фото -->
         <Grid Grid.Row="1" Grid.Column="0"
-              Margin="15,15,0,10">
+              Margin="15,15,0,15">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" 
-                        Margin="0,0,0,10"
+                        Margin="0,0,0,12"
                         Orientation="Horizontal" >
                 <local:AnyMenuOption x:Name="Class1s"
                                      GroupName="ClassGroup"
@@ -214,14 +214,14 @@
 
         <!-- Центральный столбик с таблицами -->
         <Grid Grid.Row="1" Grid.Column="1"
-              Margin="15,15,15,10">
+              Margin="15,15,15,15">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" 
-                        Margin="0,0,0,10"
+                        Margin="0,0,0,12"
                         Orientation="Horizontal" >
                 <local:OneMenuOption x:Name="ShowAllDataGrid"
                                      GroupName="DataGridGroup"
@@ -480,13 +480,15 @@
 
         <!-- Правый столбик с действиями -->
         <Grid Grid.Row="1" Grid.Column="2" 
-              Margin="0,15,15,10">
+              Margin="0,15,15,15">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <StackPanel Grid.Row="0" 
+                        Margin="0,0,0,12"
+                        Orientation="Horizontal" >
                 <local:OneMenuOption x:Name="ShowCharacterActionGrid"
                                      IsChecked="True"
                                      GroupName="ActionGroup"                                 
@@ -873,8 +875,10 @@
 
                 <Grid Name="OtherActionGrid"
                       Visibility="Collapsed"
-                      Margin="10,10,10,15">
+                      HorizontalAlignment="Center"
+                      Margin="0,10,0,15">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
@@ -887,14 +891,13 @@
 
                     <local:Controller x:Name="CreateMaxAmountFolders"
                                       Grid.Row="0" Grid.Column="0"
-                                      Margin="0,10,0,0"
                                       Purpose="Action"                      
-                                      Command="Раскидать по макс количеству"
+                                      Command="Раскидать по количеству"
                                       MouseLeftButtonDown="CreateMaxAmountFolders_MouseLeftButtonDown" />
 
                     <TextBox Name="MaxAmountTextBox"
                              Grid.Row="0" Grid.Column="1"
-                             Margin="10,11,0,0"
+                             Margin="13,1,0,0"
                              Width="50" Height="35"
                              FontSize="18"
                              TextAlignment="Center"
@@ -905,14 +908,14 @@
 
                     <local:Controller x:Name="CreateRatioEdgeFolders"
                                       Grid.Row="1" Grid.Column="0"
-                                      Margin="0,0,0,0"
+                                      Margin="0,10,0,0"
                                       Purpose="Action"                      
                                       Command="Раскидать по ориентации"
                                       MouseLeftButtonDown="CreateRatioEdgeFolders_MouseLeftButtonDown" />
 
                     <TextBox Name="RatioEdgeTextBox"
                              Grid.Row="1" Grid.Column="1"
-                             Margin="10,1,0,0"
+                             Margin="13,11,0,0"
                              Width="50" Height="35"
                              FontSize="18"
                              TextAlignment="Center"
@@ -920,6 +923,14 @@
                              Text="{Binding RatioEdgeTemplate, 
                                             UpdateSourceTrigger=PropertyChanged,
                                             Mode=TwoWay}"/>
+
+
+                    <local:Controller x:Name="SortTags"
+                                      Grid.Row="2" Grid.Column="0"
+                                      Margin="0,10,0,0"
+                                      Purpose="Action"                      
+                                      Command="Отсортировать теги фокуса"
+                                      MouseLeftButtonDown="SortTags_MouseLeftButtonDown" />
 
                 </Grid>
             </Grid>
@@ -936,10 +947,6 @@
                    Height="24"  
                    HorizontalAlignment="Left"
                    TextAlignment="Left" />
-
-  
-
-
 
         <!-- Панель управления загрузкой -->
         <Grid Grid.Row="2" Grid.Column="1"
@@ -975,7 +982,8 @@
         </Grid>
 
 
-        <Grid Grid.Row="2" Grid.Column="2">
+        <Grid Grid.Row="2" Grid.Column="2"
+              Margin="5,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -989,7 +997,7 @@
 
             <CheckBox Name="IsSearchParent"
                       Grid.Row="1"
-                      Margin="0,8,0,0"
+                      Margin="0,5,0,0"
                       Checked="IsSearchParent_Checked"
                       Unchecked="IsSearchParent_Checked" >
                 <TextBlock Margin="2,-1,0,0" 

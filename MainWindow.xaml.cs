@@ -1041,6 +1041,148 @@ namespace Reviser
 
 
 
+        #region Сортировка тегов
+        private async void SortTags_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Загружаем файлы для обработки
+            var items = await LoadImageNameFilesAsync(moveImageFiles);
+
+            // Определяем порядок сортировки для тегов с буквой 'f'
+            var tagOrder = new List<string> { "fb00", "fb3ll", "fh1p", "fa55", "fd1ck" };
+
+            // Обрабатываем каждый файл
+            foreach (var item in items)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(item.OriginalName);
+                string extension = Path.GetExtension(item.OriginalName);
+
+                // Разделяем имя и теги
+                int atIndex = fileName.IndexOf('@');
+                if (atIndex == -1)
+                {
+                    // Нет тегов, оставляем имя как есть
+                    item.NewName = item.OriginalName;
+                    continue;
+                }
+
+                string baseName = fileName.Substring(0, atIndex).Trim();
+                string tagsString = fileName.Substring(atIndex + 1).Trim();
+
+                if (string.IsNullOrEmpty(tagsString))
+                {
+                    // Пустые теги, оставляем имя как есть
+                    item.NewName = item.OriginalName;
+                    continue;
+                }
+
+                // Разделяем теги на массив
+                string[] tags = tagsString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // Находим позицию первого f-тега
+                int firstFTagIndex = -1;
+                for (int i = 0; i < tags.Length; i++)
+                {
+                    if (tags[i].StartsWith("f", StringComparison.OrdinalIgnoreCase))
+                    {
+                        firstFTagIndex = i;
+                        break;
+                    }
+                }
+
+                // Если нет f-тегов, оставляем имя как есть
+                if (firstFTagIndex == -1)
+                {
+                    item.NewName = item.OriginalName;
+                    continue;
+                }
+
+                // Собираем теги до первого f-тега
+                List<string> beforeFTags = new List<string>();
+                for (int i = 0; i < firstFTagIndex; i++)
+                {
+                    beforeFTags.Add(tags[i]);
+                }
+
+                // Собираем f-теги
+                List<string> fTags = new List<string>();
+                List<string> afterTags = new List<string>();
+                bool collectingFTags = false;
+
+                for (int i = firstFTagIndex; i < tags.Length; i++)
+                {
+                    if (tags[i].StartsWith("f", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fTags.Add(tags[i]);
+                        collectingFTags = true;
+                    }
+                    else if (collectingFTags)
+                    {
+                        // Как только встретили не f-тег после f-тегов, перестаем собирать f-теги
+                        // и добавляем остальные теги в afterTags
+                        for (int j = i; j < tags.Length; j++)
+                        {
+                            afterTags.Add(tags[j]);
+                        }
+                        break;
+                    }
+                }
+
+                // Если после f-тегов нет других тегов
+                if (!collectingFTags || afterTags.Count == 0)
+                {
+                    // Добавляем все теги после первого f-тега как другие теги
+                    for (int i = firstFTagIndex + fTags.Count; i < tags.Length; i++)
+                    {
+                        afterTags.Add(tags[i]);
+                    }
+                }
+
+                // Сортируем f-теги по заданному порядку
+                fTags = fTags.OrderBy(tag =>
+                {
+                    int index = tagOrder.FindIndex(orderedTag =>
+                        string.Equals(orderedTag, tag, StringComparison.OrdinalIgnoreCase));
+                    return index == -1 ? int.MaxValue : index; // Теги не из списка идут в конец
+                }).ToList();
+
+                // Объединяем все теги в правильном порядке
+                List<string> allTags = new List<string>();
+                allTags.AddRange(beforeFTags);
+                allTags.AddRange(fTags);
+                allTags.AddRange(afterTags);
+
+                // Формируем новое имя файла
+                string newTagsString = string.Join(" ", allTags);
+                string newFileName = $"{baseName} @{newTagsString}{extension}";
+
+                // Обновляем запись
+                item.NewName = newFileName;
+            }
+
+            // Обновляем UI
+            moveImageFiles.Clear();
+            foreach (var item in items)
+            {
+                moveImageFiles.Add(item);
+            }
+
+            // Показываем таблицу с результатами
+            var args = new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+            {
+                RoutedEvent = UIElement.MouseLeftButtonDownEvent,
+                Source = ShowMoveDataGrid
+            };
+
+            ShowMoveDataGrid.RaiseEvent(args);
+            ShowCurrentDataGrid(MoveDataGrid);
+
+            // Сразу применяем переименование
+            RenameSave(moveImageFiles);
+        }
+        #endregion
+
+
+
         #region Подгрузка и сохранение
         private async Task<ObservableCollection<ImageNewName>> LoadImageNameFilesAsync(ObservableCollection<ImageNewName> imageNewNames)
         {
