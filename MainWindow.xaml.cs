@@ -462,9 +462,6 @@ namespace Reviser
                 editingTextBox = null;
                 editingItem = null;
                 originalEditingFileName = null;
-
-                MessageBox.Show($"Файл успешно переименован:\n{originalEditingFileName} → {newFileName}",
-                               "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -926,17 +923,17 @@ namespace Reviser
             includeTags.Clear();
             excludeTags.Clear();
 
-            if (characterIncludePanel != null) characterIncludePanel.Children.Clear();
-            if (characterExcludePanel != null) characterExcludePanel.Children.Clear();
-            if (characterOtherPanel != null) characterOtherPanel.Children.Clear();
+            if (CharacterIncludePanel != null) CharacterIncludePanel.Children.Clear();
+            if (CharacterExcludePanel != null) CharacterExcludePanel.Children.Clear();
+            if (CharacterOtherPanel != null) CharacterOtherPanel.Children.Clear();
 
-            if (authorIncludePanel != null) authorIncludePanel.Children.Clear();
-            if (authorExcludePanel != null) authorExcludePanel.Children.Clear();
-            if (authorOtherPanel != null) authorOtherPanel.Children.Clear();
+            if (AuthorIncludePanel != null) AuthorIncludePanel.Children.Clear();
+            if (AuthorExcludePanel != null) AuthorExcludePanel.Children.Clear();
+            if (AuthorOtherPanel != null) AuthorOtherPanel.Children.Clear();
 
-            if (tagIncludePanel != null) tagIncludePanel.Children.Clear();
-            if (tagExcludePanel != null) tagExcludePanel.Children.Clear();
-            if (tagOtherPanel != null) tagOtherPanel.Children.Clear();
+            if (TagIncludePanel != null) TagIncludePanel.Children.Clear();
+            if (TagExcludePanel != null) TagExcludePanel.Children.Clear();
+            if (TagOtherPanel != null) TagOtherPanel.Children.Clear();
 
             Count.Text = "Всего: 0";
             ClearImagePreview();
@@ -1207,10 +1204,6 @@ namespace Reviser
                     .ToList();
             }
 
-            // Обновляем заголовки
-            UpdateHeaderText(includeHeaderText, "Включать", includePanel, true);
-            UpdateHeaderText(excludeHeaderText, "Исключать", excludePanel, false);
-
             foreach (var item in filteredItems)
             {
                 var button = CreateCategoryButton(item.Key, item.Value);
@@ -1231,31 +1224,19 @@ namespace Reviser
             }
         }
 
-        private void UpdateHeaderText(TextBlock headerText, string title, WrapPanel panel, bool isInclude)
-        {
-            if (panel.Children.Count == 0)
-            {
-                headerText.Text = $"{title} | Нет элементов";
-            }
-            else
-            {
-                headerText.Text = $"{title} | {panel.Children.Count} элемент(ов)";
-            }
-        }
-
         private bool IsInIncludeSet(string itemName, WrapPanel includePanel)
         {
-            if (includePanel == characterIncludePanel) return includeCharacters.Contains(itemName);
-            if (includePanel == authorIncludePanel) return includeAuthors.Contains(itemName);
-            if (includePanel == tagIncludePanel) return includeTags.Contains(itemName);
+            if (includePanel == CharacterIncludePanel) return includeCharacters.Contains(itemName);
+            if (includePanel == AuthorIncludePanel) return includeAuthors.Contains(itemName);
+            if (includePanel == TagIncludePanel) return includeTags.Contains(itemName);
             return false;
         }
 
         private bool IsInExcludeSet(string itemName, WrapPanel excludePanel)
         {
-            if (excludePanel == characterExcludePanel) return excludeCharacters.Contains(itemName);
-            if (excludePanel == authorExcludePanel) return excludeAuthors.Contains(itemName);
-            if (excludePanel == tagExcludePanel) return excludeTags.Contains(itemName);
+            if (excludePanel == CharacterExcludePanel) return excludeCharacters.Contains(itemName);
+            if (excludePanel == AuthorExcludePanel) return excludeAuthors.Contains(itemName);
+            if (excludePanel == TagExcludePanel) return excludeTags.Contains(itemName);
             return false;
         }
 
@@ -1276,8 +1257,8 @@ namespace Reviser
         private void AddToIncludePanel(TextBlock button, WrapPanel panel, Action<object, MouseButtonEventArgs> clickHandler, bool isInclude)
         {
             button.Background = isInclude ?
-                new SolidColorBrush(Color.FromRgb(144, 238, 144)) : // светло-зеленый для включаемых
-                new SolidColorBrush(Color.FromRgb(255, 182, 193));  // светло-красный для исключаемых
+                new SolidColorBrush(Color.FromRgb(210, 243, 211)) : // светло-зеленый для включаемых
+                new SolidColorBrush(Color.FromRgb(243, 210, 210));  // светло-красный для исключаемых
 
             // Левая кнопка - снимает выбор
             button.MouseLeftButtonDown += (s, e) => clickHandler(s, e);
@@ -1288,11 +1269,11 @@ namespace Reviser
                 button.MouseRightButtonDown += (s, e) =>
                 {
                     // Создаем аргументы для перемещения в исключаемые
-                    if (panel == characterIncludePanel)
+                    if (panel == CharacterIncludePanel)
                         ExcludeCharacterButton_Click(s, e);
-                    else if (panel == authorIncludePanel)
+                    else if (panel == AuthorIncludePanel)
                         ExcludeAuthorButton_Click(s, e);
-                    else if (panel == tagIncludePanel)
+                    else if (panel == TagIncludePanel)
                         ExcludeTagButton_Click(s, e);
                     e.Handled = true;
                 };
@@ -1303,11 +1284,11 @@ namespace Reviser
                 button.MouseRightButtonDown += (s, e) =>
                 {
                     // Создаем аргументы для перемещения во включаемые
-                    if (panel == characterExcludePanel)
+                    if (panel == CharacterExcludePanel)
                         IncludeCharacterButton_Click(s, e);
-                    else if (panel == authorExcludePanel)
+                    else if (panel == AuthorExcludePanel)
                         IncludeAuthorButton_Click(s, e);
-                    else if (panel == tagExcludePanel)
+                    else if (panel == TagExcludePanel)
                         IncludeTagButton_Click(s, e);
                     e.Handled = true;
                 };
@@ -1316,15 +1297,15 @@ namespace Reviser
             button.MouseEnter += (s, e) =>
             {
                 button.Background = isInclude ?
-                    new SolidColorBrush(Color.FromRgb(50, 205, 50)) : // зеленый при наведении
-                    new SolidColorBrush(Color.FromRgb(255, 105, 97)); // красный при наведении
+                    new SolidColorBrush(Color.FromRgb(186, 243, 186)) : // зеленый при наведении
+                    new SolidColorBrush(Color.FromRgb(243, 183, 183)); // красный при наведении
             };
 
             button.MouseLeave += (s, e) =>
             {
                 button.Background = isInclude ?
-                    new SolidColorBrush(Color.FromRgb(144, 238, 144)) : // светло-зеленый
-                    new SolidColorBrush(Color.FromRgb(255, 182, 193));  // светло-красный
+                    new SolidColorBrush(Color.FromRgb(210, 243, 211)) : // светло-зеленый
+                    new SolidColorBrush(Color.FromRgb(243, 210, 210));  // светло-красный
             };
 
             panel.Children.Add(button);
@@ -1604,8 +1585,12 @@ namespace Reviser
         {
             if (includeCharacters.Count == 0 && excludeCharacters.Count == 0)
             {
-                // Если нет фильтров, показываем все изображения
-                RefreshCurrentDataGrid();
+                sourceCharacterImageItems.Clear();
+                classedCharacterImageItems.Clear();
+                CharacterDataGrid.Items.Refresh();
+
+                // Обновляем счетчик
+                UpdateCountText();
                 return;
             }
 
@@ -1638,7 +1623,12 @@ namespace Reviser
         {
             if (includeAuthors.Count == 0 && excludeAuthors.Count == 0)
             {
-                RefreshCurrentDataGrid();
+                sourceAuthorImageItems.Clear();
+                classedAuthorImageItems.Clear();
+                AuthorDataGrid.Items.Refresh();
+
+                // Обновляем счетчик
+                UpdateCountText();
                 return;
             }
 
@@ -1668,7 +1658,12 @@ namespace Reviser
         {
             if (includeTags.Count == 0 && excludeTags.Count == 0)
             {
-                RefreshCurrentDataGrid();
+                sourceTagImageItems.Clear();
+                classedTagImageItems.Clear();
+                TagDataGrid.Items.Refresh();
+
+                // Обновляем счетчик
+                UpdateCountText();
                 return;
             }
 
@@ -1729,11 +1724,11 @@ namespace Reviser
         private void UpdateCharacterList()
         {
             UpdateList(characterStatistics,
-                       characterIncludePanel,
-                       characterExcludePanel,
-                       characterOtherPanel,
-                       characterIncludeHeaderText,
-                       characterExcludeHeaderText,
+                       CharacterIncludePanel,
+                       CharacterExcludePanel,
+                       CharacterOtherPanel,
+                       CharacterIncludeHeaderText,
+                       CharacterExcludeHeaderText,
                        CharacterFilterTypeComboBox,
                        CharacterAmountTemplate,
                        IncludeCharacterButton_Click,
@@ -1762,11 +1757,11 @@ namespace Reviser
         private void UpdateAuthorList()
         {
             UpdateList(authorStatistics,
-                       authorIncludePanel,
-                       authorExcludePanel,
-                       authorOtherPanel,
+                       AuthorIncludePanel,
+                       AuthorExcludePanel,
+                       AuthorOtherPanel,
                        authorIncludeHeaderText,
-                       authorExcludeHeaderText,
+                       AuthorExcludeHeaderText,
                        AuthorFilterTypeComboBox,
                        AuthorAmountTemplate,
                        IncludeAuthorButton_Click,
@@ -1795,11 +1790,11 @@ namespace Reviser
         private void UpdateTagList()
         {
             UpdateList(tagStatistics,
-                       tagIncludePanel,
-                       tagExcludePanel,
-                       tagOtherPanel,
-                       tagIncludeHeaderText,
-                       tagExcludeHeaderText,
+                       TagIncludePanel,
+                       TagExcludePanel,
+                       TagOtherPanel,
+                       TagIncludeHeaderText,
+                       TagExcludeHeaderText,
                        TagFilterTypeComboBox,
                        TagAmountTemplate,
                        IncludeTagButton_Click,
