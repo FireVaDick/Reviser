@@ -7,10 +7,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -240,10 +242,417 @@ namespace Reviser
         {
             switch (e.Key)
             {
-                case Key.X:
-                    //SwapX_MouseLeftButtonDown(null, null);
+                case Key.F2:
+                    StartEditingSelectedRow();
+                    e.Handled = true;
+                    break;
+                case Key.Enter:
+                    CommitEditAndRename();
+                    e.Handled = true;
+                    break;
+                case Key.Escape:
+                    CancelEdit();
+                    e.Handled = true;
                     break;
             }
+        }
+        #endregion
+
+
+
+        #region Переименовать
+        private TextBox editingTextBox;
+        private ImageInfoItem editingItem;
+        private string originalEditingFileName;
+
+        private void StartEditingSelectedRow()
+        {
+            if (currentDataGrid == null || currentDataGrid.SelectedItem == null)
+                return;
+
+            // Проверяем, какая таблица активна и можно ли редактировать
+            if (currentDataGrid == AllDataGrid ||
+                currentDataGrid == CharacterDataGrid ||
+                currentDataGrid == AuthorDataGrid ||
+                currentDataGrid == TagDataGrid)
+            {
+                if (currentDataGrid.SelectedItem is ImageInfoItem selectedItem)
+                {
+                    StartEditingImageInfoItem(selectedItem);
+                }
+            }
+        }
+
+        private void StartEditingImageInfoItem(ImageInfoItem item)
+        {
+            editingItem = item;
+            originalEditingFileName = item.FileName;
+
+            // Находим строку в DataGrid
+            var row = currentDataGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+            if (row == null) return;
+
+            // Находим колонку с именем файла (обычно вторая колонка с Header="Имя")
+            DataGridColumn nameColumn = null;
+            foreach (var column in currentDataGrid.Columns)
+            {
+                if (column is DataGridTextColumn textColumn && textColumn.Header?.ToString() == "Имя")
+                {
+                    nameColumn = column;
+                    break;
+                }
+            }
+
+            if (nameColumn == null) return;
+
+            // Получаем ячейку
+            var cellContent = nameColumn.GetCellContent(row);
+            if (cellContent is TextBlock textBlock)
+            {
+                // Создаем TextBox для редактирования
+                editingTextBox = new TextBox
+                {
+                    Text = item.FileName,
+                    FontSize = 16,
+                    FontFamily = new FontFamily("pack://application:,,,/Fonts/#v_DistrictTF-Regular"),
+                    BorderThickness = new Thickness(0),
+                    Padding = new Thickness(2),
+                    VerticalContentAlignment = VerticalAlignment.Center
+                };
+
+                // Заменяем TextBlock на TextBox
+                var parent = textBlock.Parent as FrameworkElement;
+                if (parent != null)
+                {
+                    // Сохраняем оригинальный контент
+                    parent.Tag = textBlock; // сохраняем для восстановления
+
+                    // Добавляем TextBox
+                    if (parent is Border border)
+                    {
+                        border.Child = editingTextBox;
+                    }
+                    else if (parent is ContentPresenter presenter)
+                    {
+                        presenter.Content = editingTextBox;
+                    }
+                    else
+                    {
+                        // Пытаемся найти ContentControl
+                        var contentControl = FindVisualParent<ContentControl>(textBlock);
+                        if (contentControl != null)
+                        {
+                            contentControl.Content = editingTextBox;
+                        }
+                    }
+
+                    // Фокусируемся на TextBox
+                    editingTextBox.Focus();
+                    editingTextBox.SelectAll();
+
+                    // Обработчики событий
+                    editingTextBox.KeyDown += EditingTextBox_KeyDown;
+                    editingTextBox.LostFocus += EditingTextBox_LostFocus;
+                }
+            }
+        }
+
+        private void EditingTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                CommitEditAndRename();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                CancelEdit();
+                e.Handled = true;
+            }
+        }
+
+        private void EditingTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // Если потеряли фокус и не было сохранения, отменяем
+            if (editingTextBox != null && !editingTextBox.IsKeyboardFocusWithin)
+            {
+                CancelEdit();
+            }
+        }
+
+        private void CommitEditAndRename()
+        {
+            if (editingItem == null || editingTextBox == null) return;
+
+            string newFileName = editingTextBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(newFileName) || newFileName == originalEditingFileName)
+            {
+                CancelEdit();
+                return;
+            }
+
+            try
+            {
+                // Полный путь к файлу
+                string originalFullPath = editingItem.FilePath;
+                string directory = Path.GetDirectoryName(originalFullPath);
+                string extension = Path.GetExtension(originalFullPath);
+
+                // Проверяем, что новое имя имеет правильное расширение
+                if (!newFileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+                {
+                    newFileName += extension;
+                }
+
+                string newFullPath = Path.Combine(directory, newFileName);
+
+                // Проверяем, не существует ли уже файл с таким именем
+                if (File.Exists(newFullPath))
+                {
+                    MessageBox.Show($"Файл с именем '{newFileName}' уже существует.",
+                                  "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CancelEdit();
+                    return;
+                }
+
+                // Переименовываем файл на диске
+                File.Move(originalFullPath, newFullPath);
+
+                // Обновляем данные в объекте
+                editingItem.FileName = newFileName;
+                editingItem.FilePath = newFullPath;
+
+                // Также обновляем оригинальное имя в parsed данных
+                if (editingItem.CharacterList != null && editingItem.CharacterList.Count > 0)
+                {
+                    // Парсим новое имя для обновления данных
+                    var newParsed = PartsOfImageName.ParseImageNameIntoParts(newFileName);
+                    editingItem.Character = newParsed.Character;
+                    editingItem.Author = newParsed.Author;
+                    editingItem.Class = newParsed.Class;
+                    editingItem.Number = newParsed.Number;
+                    editingItem.Tags = newParsed.Tags;
+                    editingItem.CharacterList = newParsed.CharacterList;
+                    editingItem.AuthorList = newParsed.AuthorList;
+                    editingItem.TagList = newParsed.TagList;
+                }
+
+                // Обновляем отображение в таблице
+                currentDataGrid.Items.Refresh();
+
+                // Восстанавливаем TextBlock
+                RestoreTextBlock();
+
+                // Обновляем превью, если оно активно
+                if (PreviewFileName.Text.Contains(originalEditingFileName))
+                {
+                    PreviewFileName.Text = newFileName;
+                }
+
+                // Обновляем статистику, если нужно
+                UpdateStatisticsAfterRename(originalEditingFileName, newFileName);
+
+                // Очищаем редактирование
+                editingTextBox = null;
+                editingItem = null;
+                originalEditingFileName = null;
+
+                MessageBox.Show($"Файл успешно переименован:\n{originalEditingFileName} → {newFileName}",
+                               "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при переименовании файла:\n{ex.Message}",
+                               "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                CancelEdit();
+            }
+        }
+
+        private void CancelEdit()
+        {
+            if (editingTextBox != null)
+            {
+                // Восстанавливаем TextBlock
+                RestoreTextBlock();
+
+                // Очищаем редактирование
+                editingTextBox = null;
+                editingItem = null;
+                originalEditingFileName = null;
+            }
+        }
+
+        private void RestoreTextBlock()
+        {
+            if (editingTextBox == null) return;
+
+            // Находим родительский элемент и восстанавливаем TextBlock
+            var parent = editingTextBox.Parent as FrameworkElement;
+            if (parent != null)
+            {
+                // Проверяем, сохранили ли мы TextBlock в Tag
+                if (parent.Tag is TextBlock originalTextBlock)
+                {
+                    if (parent is Border border)
+                    {
+                        border.Child = originalTextBlock;
+                    }
+                    else if (parent is ContentPresenter presenter)
+                    {
+                        presenter.Content = originalTextBlock;
+                    }
+                    else
+                    {
+                        var contentControl = FindVisualParent<ContentControl>(editingTextBox);
+                        if (contentControl != null)
+                        {
+                            contentControl.Content = originalTextBlock;
+                        }
+                    }
+                }
+            }
+
+            // Удаляем обработчики событий
+            editingTextBox.KeyDown -= EditingTextBox_KeyDown;
+            editingTextBox.LostFocus -= EditingTextBox_LostFocus;
+        }
+
+        private void UpdateStatisticsAfterRename(string oldFileName, string newFileName)
+        {
+            // Парсим старое и новое имена
+            var oldParsed = PartsOfImageName.ParseImageNameIntoParts(oldFileName);
+            var newParsed = PartsOfImageName.ParseImageNameIntoParts(newFileName);
+
+            // Обновляем статистику персонажей
+            UpdateCharacterStatisticsAfterRename(oldParsed, newParsed);
+
+            // Обновляем статистику авторов
+            UpdateAuthorStatisticsAfterRename(oldParsed, newParsed);
+
+            // Обновляем статистику тегов
+            UpdateTagStatisticsAfterRename(oldParsed, newParsed);
+        }
+
+        private void UpdateCharacterStatisticsAfterRename(PartsOfImageName oldParsed, PartsOfImageName newParsed)
+        {
+            // Уменьшаем счетчики для старых персонажей
+            if (oldParsed?.CharacterList != null)
+            {
+                foreach (var character in oldParsed.CharacterList)
+                {
+                    if (characterStatistics.ContainsKey(character))
+                    {
+                        characterStatistics[character]--;
+                        if (characterStatistics[character] <= 0)
+                        {
+                            characterStatistics.Remove(character);
+                        }
+                    }
+                }
+            }
+
+            // Увеличиваем счетчики для новых персонажей
+            if (newParsed?.CharacterList != null)
+            {
+                foreach (var character in newParsed.CharacterList)
+                {
+                    if (characterStatistics.ContainsKey(character))
+                    {
+                        characterStatistics[character]++;
+                    }
+                    else
+                    {
+                        characterStatistics[character] = 1;
+                    }
+                }
+            }
+
+            characterListNeedsUpdate = true;
+        }
+
+        private void UpdateAuthorStatisticsAfterRename(PartsOfImageName oldParsed, PartsOfImageName newParsed)
+        {
+            // Аналогично для авторов
+            if (oldParsed?.AuthorList != null)
+            {
+                foreach (var author in oldParsed.AuthorList)
+                {
+                    if (authorStatistics.ContainsKey(author))
+                    {
+                        authorStatistics[author]--;
+                        if (authorStatistics[author] <= 0)
+                        {
+                            authorStatistics.Remove(author);
+                        }
+                    }
+                }
+            }
+
+            if (newParsed?.AuthorList != null)
+            {
+                foreach (var author in newParsed.AuthorList)
+                {
+                    if (authorStatistics.ContainsKey(author))
+                    {
+                        authorStatistics[author]++;
+                    }
+                    else
+                    {
+                        authorStatistics[author] = 1;
+                    }
+                }
+            }
+
+            authorListNeedsUpdate = true;
+        }
+
+        private void UpdateTagStatisticsAfterRename(PartsOfImageName oldParsed, PartsOfImageName newParsed)
+        {
+            // Аналогично для тегов
+            if (oldParsed?.TagList != null)
+            {
+                foreach (var tag in oldParsed.TagList)
+                {
+                    if (tagStatistics.ContainsKey(tag))
+                    {
+                        tagStatistics[tag]--;
+                        if (tagStatistics[tag] <= 0)
+                        {
+                            tagStatistics.Remove(tag);
+                        }
+                    }
+                }
+            }
+
+            if (newParsed?.TagList != null)
+            {
+                foreach (var tag in newParsed.TagList)
+                {
+                    if (tagStatistics.ContainsKey(tag))
+                    {
+                        tagStatistics[tag]++;
+                    }
+                    else
+                    {
+                        tagStatistics[tag] = 1;
+                    }
+                }
+            }
+
+            tagListNeedsUpdate = true;
+        }
+
+        private T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+
+            if (parentObject == null) return null;
+
+            if (parentObject is T parent)
+                return parent;
+            else
+                return FindVisualParent<T>(parentObject);
         }
         #endregion
 
@@ -1048,7 +1457,7 @@ namespace Reviser
             var items = await LoadImageNameFilesAsync(moveImageFiles);
 
             // Определяем порядок сортировки для тегов с буквой 'f'
-            var tagOrder = new List<string> { "fb00", "fb3ll", "fh1p", "fa55", "fd1ck" };
+            var tagOrder = new List<string> { "fb00", "fbe11", "fa55", "fh1p", "fd1ck" };
 
             // Обрабатываем каждый файл
             foreach (var item in items)
@@ -1178,6 +1587,109 @@ namespace Reviser
 
             // Сразу применяем переименование
             RenameSave(moveImageFiles);
+        }
+        #endregion
+
+
+
+        #region Перенос авторов в квадратные скобки
+        private async void MoveAuthorsToBrackets_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Загружаем файлы для обработки
+            var items = await LoadImageNameFilesAsync(replaceImageFiles);
+
+            // Обрабатываем каждый файл
+            foreach (var item in items)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(item.OriginalName);
+                string extension = Path.GetExtension(item.OriginalName);
+
+                // Используем Regex для поиска слова Work (регистронезависимо)
+                var match = Regex.Match(fileName, @"\s+Work\s+", RegexOptions.IgnoreCase);
+
+                if (!match.Success)
+                {
+                    // Также проверяем, если "Work" в самом конце
+                    if (Regex.IsMatch(fileName, @"\s+Work$", RegexOptions.IgnoreCase))
+                    {
+                        // Находим позицию последнего "Work"
+                        int workIndex = fileName.LastIndexOf("Work", StringComparison.OrdinalIgnoreCase);
+                        if (workIndex > 0)
+                        {
+                            // Проверяем, что перед "Work" есть пробел или это начало строки
+                            if (workIndex == 0 || fileName[workIndex - 1] == ' ')
+                            {
+                                // Извлекаем часть до "Work" - это автор
+                                string authorPartWork = fileName.Substring(0, workIndex).Trim();
+
+                                // Формируем новое имя
+                                string newFileName = $"Zzz.Original [{authorPartWork}]{extension}";
+                                item.NewName = newFileName;
+                                continue;
+                            }
+                        }
+                    }
+
+                    // Нет слова "Work", оставляем как есть
+                    item.NewName = item.OriginalName;
+                    continue;
+                }
+
+                // Нашли "Work" в середине имени
+                int workIndexMiddle = match.Index;
+                string authorPart = fileName.Substring(0, workIndexMiddle).Trim();
+
+                // Извлекаем часть после "Work" (длина "Work" + пробелы)
+                string restPart = fileName.Substring(workIndexMiddle + match.Length).Trim();
+
+                // Убираем возможные двойные пробелы в оставшейся части
+                restPart = Regex.Replace(restPart, @"\s+", " ").Trim();
+
+                // Проверяем, что автор не пустой и не содержит уже квадратные скобки
+                if (!string.IsNullOrEmpty(authorPart) &&
+                    !authorPart.StartsWith("[") &&
+                    !authorPart.EndsWith("]"))
+                {
+                    // Формируем новое имя
+                    string newFileName;
+
+                    if (string.IsNullOrEmpty(restPart))
+                    {
+                        newFileName = $"Zzz.Original [{authorPart}]{extension}";
+                    }
+                    else
+                    {
+                        newFileName = $"Zzz.Original [{authorPart}] {restPart}{extension}";
+                    }
+
+                    item.NewName = newFileName;
+                }
+                else
+                {
+                    // Автор уже в скобках или что-то не так
+                    item.NewName = item.OriginalName;
+                }
+            }
+
+            // Обновляем UI
+            replaceImageFiles.Clear();
+            foreach (var item in items)
+            {
+                replaceImageFiles.Add(item);
+            }
+
+            // Показываем таблицу с результатами
+            var args = new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+            {
+                RoutedEvent = UIElement.MouseLeftButtonDownEvent,
+                Source = ShowReplaceDataGrid
+            };
+
+            ShowReplaceDataGrid.RaiseEvent(args);
+            ShowCurrentDataGrid(ReplaceDataGrid);
+
+            // Сразу применяем переименование
+            RenameSave(replaceImageFiles);
         }
         #endregion
 

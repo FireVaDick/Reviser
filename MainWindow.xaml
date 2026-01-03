@@ -932,6 +932,14 @@
                                       Command="Отсортировать теги фокуса"
                                       MouseLeftButtonDown="SortTags_MouseLeftButtonDown" />
 
+                    <local:Controller x:Name="MoveAuthorsToBrackets"
+                                      Grid.Row="3" Grid.Column="0"
+                                      Margin="0,10,0,0"
+                                      Purpose="Action"                      
+                                      Command="Переименовать оригиналы"
+                                      MouseLeftButtonDown="MoveAuthorsToBrackets_MouseLeftButtonDown" />
+
+
                 </Grid>
             </Grid>
         </Grid>
