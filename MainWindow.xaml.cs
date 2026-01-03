@@ -29,9 +29,9 @@ namespace Reviser
         private double ratioEdgeTemplate = 0.15;
         private int maxAmountTemplate = 100;
 
-        private int characterAmountTemplate = 3;
-        private int authorAmountTemplate = 3;
-        private int tagAmountTemplate = 6;
+        private int characterAmountTemplate = 2;
+        private int authorAmountTemplate = 2;
+        private int tagAmountTemplate = 5;
 
         private bool characterListNeedsUpdate = false;
         private bool authorListNeedsUpdate = false;

@@ -525,60 +525,70 @@
                             CornerRadius="10" >
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <!-- Список авторов -->
-                            <StackPanel Grid.Row="1"
-                                        Margin="10,10,10,10"
-                                        VerticalAlignment="Stretch">
-                                
+                            <Grid Margin="10,10,10,10"
+                                  VerticalAlignment="Stretch">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
                                 <!-- Заголовок для включаемых -->
                                 <Border x:Name="CharacterIncludeHeader"
+                                        Grid.Row="0"
                                         BorderBrush="#5cae5d"
                                         BorderThickness="0,0,0,2"
                                         Padding="5,3,5,3"
                                         Margin="5,0,5,7">
-                                <TextBlock x:Name="CharacterIncludeHeaderText"
-                                           Text="Разрешённые"
-                                           Foreground="#5cae5d"/>
+                                    <TextBlock x:Name="CharacterIncludeHeaderText"
+                                               Text="Разрешённые"
+                                               Foreground="#5cae5d"/>
                                 </Border>
-
+                     
                                 <!-- Панель включаемых -->
-                                <ScrollViewer MaxHeight="100"
-                                              VerticalScrollBarVisibility="Auto"
-                                              Margin="0,0,0,10">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                Grid.Row="1"
+                                                Margin="0,0,0,10">
                                     <WrapPanel x:Name="CharacterIncludePanel"
-                                               Orientation="Horizontal">
-                                    <!-- Включаемые персонажи будут добавляться динамически -->
+                                                Orientation="Horizontal">
+                                        <!-- Включаемые персонажи будут добавляться динамически -->
                                     </WrapPanel>
                                 </ScrollViewer>
-
+                               
                                 <!-- Заголовок для исключаемых -->
                                 <Border x:Name="CharacterExcludeHeader"
+                                        Grid.Row="2"
                                         BorderBrush="#c35b5b"
                                         BorderThickness="0,0,0,2"
                                         Padding="5,3,5,3"
                                         Margin="5,0,5,7">
-                                <TextBlock x:Name="CharacterExcludeHeaderText"
+                                    <TextBlock x:Name="CharacterExcludeHeaderText"
                                            Text="Запрещённые"
                                            Foreground="#c35b5b"/>
                                 </Border>
 
                                 <!-- Панель исключаемых -->
-                                <ScrollViewer MaxHeight="100"
-                                              VerticalScrollBarVisibility="Auto"
-                                              Margin="0,0,0,10">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                            Grid.Row="3"
+                                            Margin="0,0,0,10">
                                     <WrapPanel x:Name="CharacterExcludePanel"
-                                               Orientation="Horizontal">
-                                    <!-- Исключаемые персонажи будут добавляться динамически -->
+                                            Orientation="Horizontal">
+                                        <!-- Исключаемые персонажи будут добавляться динамически -->
                                     </WrapPanel>
                                 </ScrollViewer>
 
                                 <!-- Все остальные -->
-                                <Border BorderBrush="Black"
+                                <Border Grid.Row="4"
+                                        BorderBrush="Black"
                                         BorderThickness="0,0,0,2"
                                         Padding="5,3,5,3"
                                         Margin="5,0,5,7">
@@ -587,15 +597,16 @@
                                 </Border>
 
                                 <!-- Панель всех остальных -->
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer Grid.Row="5"
+                                                VerticalScrollBarVisibility="Auto">
                                     <WrapPanel x:Name="CharacterOtherPanel"
-                                               Orientation="Horizontal">
-                                    <!-- Остальные персонажи будут добавляться динамически -->
+                                            Orientation="Horizontal">
+                                        <!-- Остальные персонажи будут добавляться динамически -->
                                     </WrapPanel>
                                 </ScrollViewer>
-                            </StackPanel>
+                            </Grid>
 
-                            <Grid Grid.Row="2"
+                            <Grid Grid.Row="1"
                                   Margin="0,0,15,15"
                                   Height="35"
                                   HorizontalAlignment="Right">
@@ -637,18 +648,27 @@
                             CornerRadius="10" >
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <!-- Список авторов -->
-                            <StackPanel Grid.Row="1"
-                                        Margin="10,10,10,10"
-                                        VerticalAlignment="Stretch">
-
+                            <Grid Grid.Row="0"
+                                  Margin="10,10,10,10"
+                                  VerticalAlignment="Stretch">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
                                 <!-- Заголовок для включаемых -->
                                 <Border x:Name="AuthorIncludeHeader"
+                                        Grid.Row="0"
                                         BorderBrush="#5cae5d"
                                         BorderThickness="0,0,0,2"
                                         Padding="5,3,5,3"
@@ -659,7 +679,7 @@
                                 </Border>
 
                                 <!-- Панель включаемых -->
-                                <ScrollViewer MaxHeight="100"
+                                <ScrollViewer Grid.Row="1"
                                               VerticalScrollBarVisibility="Auto"
                                               Margin="0,0,0,10">
                                     <WrapPanel x:Name="AuthorIncludePanel"
@@ -670,6 +690,7 @@
 
                                 <!-- Заголовок для исключаемых -->
                                 <Border x:Name="AuthorExcludeHeader"                                     
+                                        Grid.Row="2"
                                         BorderBrush="#c35b5b"
                                         BorderThickness="0,0,0,2"
                                         Padding="5,3,5,3"
@@ -680,7 +701,7 @@
                                 </Border>
 
                                 <!-- Панель исключаемых -->
-                                <ScrollViewer MaxHeight="100"
+                                <ScrollViewer Grid.Row="3"
                                               VerticalScrollBarVisibility="Auto"
                                               Margin="0,0,0,10">
                                     <WrapPanel x:Name="AuthorExcludePanel"
@@ -690,7 +711,8 @@
                                 </ScrollViewer>
 
                                 <!-- Все остальные -->
-                                <Border BorderBrush="Black"
+                                <Border Grid.Row="4"
+                                        BorderBrush="Black"
                                         BorderThickness="0,0,0,2"
                                         Padding="5,3,5,3"
                                         Margin="5,0,5,7">
@@ -699,15 +721,16 @@
                                 </Border>
 
                                 <!-- Панель всех остальных -->
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer Grid.Row="5"
+                                              VerticalScrollBarVisibility="Auto">
                                     <WrapPanel x:Name="AuthorOtherPanel"
                                                Orientation="Horizontal">
                                         <!-- Остальные персонажи будут добавляться динамически -->
                                     </WrapPanel>
                                 </ScrollViewer>
-                            </StackPanel>
+                            </Grid>
 
-                            <Grid Grid.Row="2"
+                            <Grid Grid.Row="1"
                                   Margin="0,0,15,15"
                                   Height="35"
                                   HorizontalAlignment="Right">
@@ -749,18 +772,27 @@
                             CornerRadius="10" >
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <!-- Список тегов -->
-                            <StackPanel Grid.Row="1"
-                                        Margin="10,10,10,10"
-                                        VerticalAlignment="Stretch">
-
+                            <Grid Grid.Row="0"
+                                  Margin="10,10,10,10"
+                                  VerticalAlignment="Stretch">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
                                 <!-- Заголовок для включаемых -->
                                 <Border x:Name="TagIncludeHeader"
+                                        Grid.Row="0"
                                         BorderBrush="#5cae5d"
                                         BorderThickness="0,0,0,2"
                                         Padding="5,3,5,3"
@@ -771,7 +803,7 @@
                                 </Border>
 
                                 <!-- Панель включаемых -->
-                                <ScrollViewer MaxHeight="100"
+                                <ScrollViewer Grid.Row="1"
                                               VerticalScrollBarVisibility="Auto"
                                               Margin="0,0,0,10">
                                     <WrapPanel x:Name="TagIncludePanel"
@@ -782,6 +814,7 @@
 
                                 <!-- Заголовок для исключаемых -->
                                 <Border x:Name="TagExcludeHeader"
+                                        Grid.Row="2"
                                         BorderBrush="#c35b5b"
                                         BorderThickness="0,0,0,2"
                                         Padding="5,3,5,3"
@@ -792,7 +825,7 @@
                                 </Border>
 
                                 <!-- Панель исключаемых -->
-                                <ScrollViewer MaxHeight="100"
+                                <ScrollViewer Grid.Row="3"
                                               VerticalScrollBarVisibility="Auto"
                                               Margin="0,0,0,10">
                                     <WrapPanel x:Name="TagExcludePanel"
@@ -802,7 +835,8 @@
                                 </ScrollViewer>
 
                                 <!-- Все остальные -->
-                                <Border BorderBrush="Black"
+                                <Border Grid.Row="4"
+                                        BorderBrush="Black"
                                         BorderThickness="0,0,0,2"
                                         Padding="5,3,5,3"
                                         Margin="5,0,5,7">
@@ -811,15 +845,16 @@
                                 </Border>
 
                                 <!-- Панель всех остальных -->
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer Grid.Row="5"
+                                              VerticalScrollBarVisibility="Auto">
                                     <WrapPanel x:Name="TagOtherPanel"
                                                Orientation="Horizontal">
                                         <!-- Остальные персонажи будут добавляться динамически -->
                                     </WrapPanel>
                                 </ScrollViewer>
-                            </StackPanel>
+                            </Grid>
 
-                            <Grid Grid.Row="2"
+                            <Grid Grid.Row="1"
                                   Margin="0,0,15,15"
                                   Height="35"
                                   HorizontalAlignment="Right">
