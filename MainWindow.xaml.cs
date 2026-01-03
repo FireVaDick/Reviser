@@ -2028,25 +2028,20 @@ namespace Reviser
 
             if (selectedItem != null)
             {
-                try
+                string fullPath = selectedItem.FilePath; 
+
+                if (File.Exists(fullPath))
                 {
-                    string fullPath = selectedItem.FileName;
-                    if (File.Exists(fullPath))
+                    Process.Start(new ProcessStartInfo
                     {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = fullPath,
-                            UseShellExecute = true
-                        });
-                    }
-                    else
-                    {
-                        MessageBox.Show("Файл не найден", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
+                        FileName = fullPath,
+                        UseShellExecute = true
+                    });
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show($"Ошибка при открытии файла: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Файл не найден:\n{fullPath}",
+                                  "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
