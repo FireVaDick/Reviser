@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -135,6 +134,12 @@ namespace Reviser
         }
         #endregion
 
+        private HashSet<string> includeCharacters = new HashSet<string>();
+        private HashSet<string> excludeCharacters = new HashSet<string>();
+        private HashSet<string> includeAuthors = new HashSet<string>();
+        private HashSet<string> excludeAuthors = new HashSet<string>();
+        private HashSet<string> includeTags = new HashSet<string>();
+        private HashSet<string> excludeTags = new HashSet<string>();
 
         private ObservableCollection<ImageInfoItem> sourceAllImageItems = new ObservableCollection<ImageInfoItem>();
         private ObservableCollection<ImageInfoItem> sourceCharacterImageItems = new ObservableCollection<ImageInfoItem>();
@@ -914,9 +919,24 @@ namespace Reviser
             authorStatistics.Clear();
             tagStatistics.Clear();
 
-            CharacterWrapPanel.Children.Clear();
-            AuthorWrapPanel.Children.Clear();
-            TagWrapPanel.Children.Clear();
+            includeCharacters.Clear();
+            excludeCharacters.Clear();
+            includeAuthors.Clear();
+            excludeAuthors.Clear();
+            includeTags.Clear();
+            excludeTags.Clear();
+
+            if (characterIncludePanel != null) characterIncludePanel.Children.Clear();
+            if (characterExcludePanel != null) characterExcludePanel.Children.Clear();
+            if (characterOtherPanel != null) characterOtherPanel.Children.Clear();
+
+            if (authorIncludePanel != null) authorIncludePanel.Children.Clear();
+            if (authorExcludePanel != null) authorExcludePanel.Children.Clear();
+            if (authorOtherPanel != null) authorOtherPanel.Children.Clear();
+
+            if (tagIncludePanel != null) tagIncludePanel.Children.Clear();
+            if (tagExcludePanel != null) tagExcludePanel.Children.Clear();
+            if (tagOtherPanel != null) tagOtherPanel.Children.Clear();
 
             Count.Text = "Всего: 0";
             ClearImagePreview();
@@ -1155,13 +1175,19 @@ namespace Reviser
 
         #region Общие методы для работы со статистикой
         private void UpdateList(Dictionary<string, int> statistics,
-                               WrapPanel wrapPanel,
-                               TextBlock noTextElement,
+                               WrapPanel includePanel,
+                               WrapPanel excludePanel,
+                               WrapPanel otherPanel,
+                               TextBlock includeHeaderText,
+                               TextBlock excludeHeaderText,
                                ComboBox filterComboBox,
                                int amountTemplate,
-                               Action<object, MouseButtonEventArgs> buttonClickHandler)
+                               Action<object, MouseButtonEventArgs> includeButtonClickHandler,
+                               Action<object, MouseButtonEventArgs> excludeButtonClickHandler)
         {
-            wrapPanel.Children.Clear();
+            includePanel.Children.Clear();
+            excludePanel.Children.Clear();
+            otherPanel.Children.Clear();
 
             string filterType = GetComboBoxFilterType(filterComboBox);
             List<KeyValuePair<string, int>> filteredItems;
@@ -1181,39 +1207,162 @@ namespace Reviser
                     .ToList();
             }
 
-            if (!filteredItems.Any())
-            {
-                noTextElement.Visibility = Visibility.Visible;
-                return;
-            }
-
-            noTextElement.Visibility = Visibility.Collapsed;
+            // Обновляем заголовки
+            UpdateHeaderText(includeHeaderText, "Включать", includePanel, true);
+            UpdateHeaderText(excludeHeaderText, "Исключать", excludePanel, false);
 
             foreach (var item in filteredItems)
             {
-                var button = new TextBlock
-                {
-                    Text = $"{item.Key} [{item.Value}]",
-                    Margin = new Thickness(5),
-                    Padding = new Thickness(5),
-                    Background = new SolidColorBrush(Color.FromRgb(221, 223, 233)),
-                    FontSize = 13,
-                    Cursor = Cursors.Hand,
-                    Tag = item.Key
-                };
+                var button = CreateCategoryButton(item.Key, item.Value);
 
-                button.MouseLeftButtonDown += (s, e) => buttonClickHandler(s, e);
-                button.MouseEnter += (s, e) =>
+                // Проверяем, в какую панель добавить кнопку
+                if (IsInIncludeSet(item.Key, includePanel))
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(174, 194, 235));
-                };
-                button.MouseLeave += (s, e) =>
+                    AddToIncludePanel(button, includePanel, includeButtonClickHandler, true);
+                }
+                else if (IsInExcludeSet(item.Key, excludePanel))
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(221, 223, 233));
-                };
-
-                wrapPanel.Children.Add(button);
+                    AddToExcludePanel(button, excludePanel, excludeButtonClickHandler, false);
+                }
+                else
+                {
+                    AddToOtherPanel(button, otherPanel, includeButtonClickHandler, excludeButtonClickHandler);
+                }
             }
+        }
+
+        private void UpdateHeaderText(TextBlock headerText, string title, WrapPanel panel, bool isInclude)
+        {
+            if (panel.Children.Count == 0)
+            {
+                headerText.Text = $"{title} | Нет элементов";
+            }
+            else
+            {
+                headerText.Text = $"{title} | {panel.Children.Count} элемент(ов)";
+            }
+        }
+
+        private bool IsInIncludeSet(string itemName, WrapPanel includePanel)
+        {
+            if (includePanel == characterIncludePanel) return includeCharacters.Contains(itemName);
+            if (includePanel == authorIncludePanel) return includeAuthors.Contains(itemName);
+            if (includePanel == tagIncludePanel) return includeTags.Contains(itemName);
+            return false;
+        }
+
+        private bool IsInExcludeSet(string itemName, WrapPanel excludePanel)
+        {
+            if (excludePanel == characterExcludePanel) return excludeCharacters.Contains(itemName);
+            if (excludePanel == authorExcludePanel) return excludeAuthors.Contains(itemName);
+            if (excludePanel == tagExcludePanel) return excludeTags.Contains(itemName);
+            return false;
+        }
+
+        private TextBlock CreateCategoryButton(string name, int count)
+        {
+            return new TextBlock
+            {
+                Text = $"{name} [{count}]",
+                Margin = new Thickness(5),
+                Padding = new Thickness(8, 5, 8, 5),
+                Background = new SolidColorBrush(Color.FromRgb(221, 223, 233)),
+                FontSize = 13,
+                Cursor = Cursors.Hand,
+                Tag = name
+            };
+        }
+
+        private void AddToIncludePanel(TextBlock button, WrapPanel panel, Action<object, MouseButtonEventArgs> clickHandler, bool isInclude)
+        {
+            button.Background = isInclude ?
+                new SolidColorBrush(Color.FromRgb(144, 238, 144)) : // светло-зеленый для включаемых
+                new SolidColorBrush(Color.FromRgb(255, 182, 193));  // светло-красный для исключаемых
+
+            // Левая кнопка - снимает выбор
+            button.MouseLeftButtonDown += (s, e) => clickHandler(s, e);
+
+            // Правая кнопка на включаемых - перемещает в исключаемые
+            if (isInclude)
+            {
+                button.MouseRightButtonDown += (s, e) =>
+                {
+                    // Создаем аргументы для перемещения в исключаемые
+                    if (panel == characterIncludePanel)
+                        ExcludeCharacterButton_Click(s, e);
+                    else if (panel == authorIncludePanel)
+                        ExcludeAuthorButton_Click(s, e);
+                    else if (panel == tagIncludePanel)
+                        ExcludeTagButton_Click(s, e);
+                    e.Handled = true;
+                };
+            }
+            // Правая кнопка на исключаемых - перемещает во включаемые
+            else
+            {
+                button.MouseRightButtonDown += (s, e) =>
+                {
+                    // Создаем аргументы для перемещения во включаемые
+                    if (panel == characterExcludePanel)
+                        IncludeCharacterButton_Click(s, e);
+                    else if (panel == authorExcludePanel)
+                        IncludeAuthorButton_Click(s, e);
+                    else if (panel == tagExcludePanel)
+                        IncludeTagButton_Click(s, e);
+                    e.Handled = true;
+                };
+            }
+
+            button.MouseEnter += (s, e) =>
+            {
+                button.Background = isInclude ?
+                    new SolidColorBrush(Color.FromRgb(50, 205, 50)) : // зеленый при наведении
+                    new SolidColorBrush(Color.FromRgb(255, 105, 97)); // красный при наведении
+            };
+
+            button.MouseLeave += (s, e) =>
+            {
+                button.Background = isInclude ?
+                    new SolidColorBrush(Color.FromRgb(144, 238, 144)) : // светло-зеленый
+                    new SolidColorBrush(Color.FromRgb(255, 182, 193));  // светло-красный
+            };
+
+            panel.Children.Add(button);
+        }
+
+        private void AddToExcludePanel(TextBlock button, WrapPanel panel, Action<object, MouseButtonEventArgs> clickHandler, bool isInclude)
+        {
+            AddToIncludePanel(button, panel, clickHandler, isInclude);
+        }
+
+        private void AddToOtherPanel(TextBlock button, WrapPanel panel,
+            Action<object, MouseButtonEventArgs> includeClickHandler,
+            Action<object, MouseButtonEventArgs> excludeClickHandler)
+        {
+            // Обработчик для левой кнопки
+            button.MouseLeftButtonDown += (s, e) =>
+            {
+                includeClickHandler(s, e);
+            };
+
+            // Обработчик для правой кнопки
+            button.MouseRightButtonDown += (s, e) =>
+            {
+                excludeClickHandler(s, e);
+                e.Handled = true; // Предотвращаем всплытие события
+            };
+
+            button.MouseEnter += (s, e) =>
+            {
+                button.Background = new SolidColorBrush(Color.FromRgb(174, 194, 235));
+            };
+
+            button.MouseLeave += (s, e) =>
+            {
+                button.Background = new SolidColorBrush(Color.FromRgb(221, 223, 233));
+            };
+
+            panel.Children.Add(button);
         }
 
         private void UpdateStatistics(ImageInfoItem item,
@@ -1272,6 +1421,305 @@ namespace Reviser
 
 
 
+        #region Клики
+        private void IncludeCharacterButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock textButton && textButton.Tag is string characterName)
+            {
+                // Обрабатываем клик
+                HandleCharacterClick(characterName, true);
+            }
+        }
+
+        private void ExcludeCharacterButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock textButton && textButton.Tag is string characterName)
+            {
+                // Обрабатываем клик
+                HandleCharacterClick(characterName, false);
+            }
+        }
+
+        // Новый метод для обработки кликов по персонажам
+        private void HandleCharacterClick(string characterName, bool isInclude)
+        {
+            if (isInclude)
+            {
+                // Если элемент уже во включаемых - удаляем его
+                if (includeCharacters.Contains(characterName))
+                {
+                    includeCharacters.Remove(characterName);
+                }
+                // Если элемент в исключаемых - перемещаем во включаемые
+                else if (excludeCharacters.Contains(characterName))
+                {
+                    excludeCharacters.Remove(characterName);
+                    includeCharacters.Add(characterName);
+                }
+                // Если элемент не выбран - добавляем во включаемые
+                else
+                {
+                    includeCharacters.Add(characterName);
+                }
+            }
+            else
+            {
+                // Если элемент уже в исключаемых - удаляем его
+                if (excludeCharacters.Contains(characterName))
+                {
+                    excludeCharacters.Remove(characterName);
+                }
+                // Если элемент во включаемых - перемещаем в исключаемые
+                else if (includeCharacters.Contains(characterName))
+                {
+                    includeCharacters.Remove(characterName);
+                    excludeCharacters.Add(characterName);
+                }
+                // Если элемент не выбран - добавляем в исключаемые
+                else
+                {
+                    excludeCharacters.Add(characterName);
+                }
+            }
+
+            UpdateCharacterList();
+            ApplyCharacterFilter();
+        }
+
+        private void IncludeAuthorButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock textButton && textButton.Tag is string authorName)
+            {
+                HandleAuthorClick(authorName, true);
+            }
+        }
+
+        private void ExcludeAuthorButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock textButton && textButton.Tag is string authorName)
+            {
+                HandleAuthorClick(authorName, false);
+            }
+        }
+
+        private void HandleAuthorClick(string authorName, bool isInclude)
+        {
+            // Такая же логика как для персонажей
+            if (isInclude)
+            {
+                if (includeAuthors.Contains(authorName))
+                {
+                    includeAuthors.Remove(authorName);
+                }
+                else if (excludeAuthors.Contains(authorName))
+                {
+                    excludeAuthors.Remove(authorName);
+                    includeAuthors.Add(authorName);
+                }
+                else
+                {
+                    includeAuthors.Add(authorName);
+                }
+            }
+            else
+            {
+                if (excludeAuthors.Contains(authorName))
+                {
+                    excludeAuthors.Remove(authorName);
+                }
+                else if (includeAuthors.Contains(authorName))
+                {
+                    includeAuthors.Remove(authorName);
+                    excludeAuthors.Add(authorName);
+                }
+                else
+                {
+                    excludeAuthors.Add(authorName);
+                }
+            }
+
+            UpdateAuthorList();
+            ApplyAuthorFilter();
+        }
+        private void IncludeTagButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock textButton && textButton.Tag is string tagName)
+            {
+                HandleTagClick(tagName, true);
+            }
+        }
+
+        private void ExcludeTagButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock textButton && textButton.Tag is string tagName)
+            {
+                HandleTagClick(tagName, false);
+            }
+        }
+
+        private void HandleTagClick(string tagName, bool isInclude)
+        {
+            // Такая же логика как для персонажей
+            if (isInclude)
+            {
+                if (includeTags.Contains(tagName))
+                {
+                    includeTags.Remove(tagName);
+                }
+                else if (excludeTags.Contains(tagName))
+                {
+                    excludeTags.Remove(tagName);
+                    includeTags.Add(tagName);
+                }
+                else
+                {
+                    includeTags.Add(tagName);
+                }
+            }
+            else
+            {
+                if (excludeTags.Contains(tagName))
+                {
+                    excludeTags.Remove(tagName);
+                }
+                else if (includeTags.Contains(tagName))
+                {
+                    includeTags.Remove(tagName);
+                    excludeTags.Add(tagName);
+                }
+                else
+                {
+                    excludeTags.Add(tagName);
+                }
+            }
+
+            UpdateTagList();
+            ApplyTagFilter();
+        }
+
+
+
+
+        private void ApplyCharacterFilter()
+        {
+            if (includeCharacters.Count == 0 && excludeCharacters.Count == 0)
+            {
+                // Если нет фильтров, показываем все изображения
+                RefreshCurrentDataGrid();
+                return;
+            }
+
+            // Фильтруем изображения по выбранным персонажам
+            var filteredItems = sourceAllImageItems
+                .Where(item =>
+                {
+                    // Должны содержать ВСЕ включенные персонажи
+                    if (includeCharacters.Count > 0)
+                    {
+                        if (item.CharacterList == null || !includeCharacters.All(inc => item.CharacterList.Contains(inc)))
+                            return false;
+                    }
+
+                    // Не должны содержать НИ ОДНОГО исключенного персонажа
+                    if (excludeCharacters.Count > 0)
+                    {
+                        if (item.CharacterList != null && excludeCharacters.Any(exc => item.CharacterList.Contains(exc)))
+                            return false;
+                    }
+
+                    return true;
+                })
+                .ToList();
+
+            UpdateFilteredCollection(filteredItems, sourceCharacterImageItems, ShowCharacterDataGrid, CharacterDataGrid);
+        }
+
+        private void ApplyAuthorFilter()
+        {
+            if (includeAuthors.Count == 0 && excludeAuthors.Count == 0)
+            {
+                RefreshCurrentDataGrid();
+                return;
+            }
+
+            var filteredItems = sourceAllImageItems
+                .Where(item =>
+                {
+                    if (includeAuthors.Count > 0)
+                    {
+                        if (item.AuthorList == null || !includeAuthors.All(inc => item.AuthorList.Contains(inc)))
+                            return false;
+                    }
+
+                    if (excludeAuthors.Count > 0)
+                    {
+                        if (item.AuthorList != null && excludeAuthors.Any(exc => item.AuthorList.Contains(exc)))
+                            return false;
+                    }
+
+                    return true;
+                })
+                .ToList();
+
+            UpdateFilteredCollection(filteredItems, sourceAuthorImageItems, ShowAuthorDataGrid, AuthorDataGrid);
+        }
+
+        private void ApplyTagFilter()
+        {
+            if (includeTags.Count == 0 && excludeTags.Count == 0)
+            {
+                RefreshCurrentDataGrid();
+                return;
+            }
+
+            var filteredItems = sourceAllImageItems
+                .Where(item =>
+                {
+                    if (includeTags.Count > 0)
+                    {
+                        if (item.TagList == null || !includeTags.All(inc => item.TagList.Contains(inc)))
+                            return false;
+                    }
+
+                    if (excludeTags.Count > 0)
+                    {
+                        if (item.TagList != null && excludeTags.Any(exc => item.TagList.Contains(exc)))
+                            return false;
+                    }
+
+                    return true;
+                })
+                .ToList();
+
+            UpdateFilteredCollection(filteredItems, sourceTagImageItems, ShowTagDataGrid, TagDataGrid);
+        }
+
+        private void UpdateFilteredCollection(List<ImageInfoItem> filteredItems,
+            ObservableCollection<ImageInfoItem> targetCollection,
+            OneMenuOption showDataGridControl,
+            DataGrid targetDataGrid)
+        {
+            targetCollection.Clear();
+
+            foreach (var item in filteredItems)
+            {
+                targetCollection.Add(item);
+            }
+
+            // Показываем соответствующую таблицу
+            var args = new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+            {
+                RoutedEvent = UIElement.MouseLeftButtonDownEvent,
+                Source = showDataGridControl
+            };
+
+            showDataGridControl.RaiseEvent(args);
+            ShowCurrentDataGrid(targetDataGrid);
+        }
+        #endregion
+
+
+
         #region Cтатистика персонажей
         private void UpdateCharacterStatistics(ImageInfoItem item)
         {
@@ -1280,8 +1728,16 @@ namespace Reviser
 
         private void UpdateCharacterList()
         {
-            UpdateList(characterStatistics, CharacterWrapPanel, NoCharacterText,
-                CharacterFilterTypeComboBox, CharacterAmountTemplate, CharacterButton_MouseLeftButtonDown);
+            UpdateList(characterStatistics,
+                       characterIncludePanel,
+                       characterExcludePanel,
+                       characterOtherPanel,
+                       characterIncludeHeaderText,
+                       characterExcludeHeaderText,
+                       CharacterFilterTypeComboBox,
+                       CharacterAmountTemplate,
+                       IncludeCharacterButton_Click,
+                       ExcludeCharacterButton_Click);
         }
 
         private void CharacterButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1305,8 +1761,16 @@ namespace Reviser
 
         private void UpdateAuthorList()
         {
-            UpdateList(authorStatistics, AuthorWrapPanel, NoAuthorText, 
-                AuthorFilterTypeComboBox, AuthorAmountTemplate, AuthorButton_MouseLeftButtonDown);
+            UpdateList(authorStatistics,
+                       authorIncludePanel,
+                       authorExcludePanel,
+                       authorOtherPanel,
+                       authorIncludeHeaderText,
+                       authorExcludeHeaderText,
+                       AuthorFilterTypeComboBox,
+                       AuthorAmountTemplate,
+                       IncludeAuthorButton_Click,
+                       ExcludeAuthorButton_Click);
         }
 
         private void AuthorButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1330,8 +1794,16 @@ namespace Reviser
 
         private void UpdateTagList()
         {
-            UpdateList(tagStatistics, TagWrapPanel, NoTagText, 
-                TagFilterTypeComboBox, TagAmountTemplate, TagButton_MouseLeftButtonDown);
+            UpdateList(tagStatistics,
+                       tagIncludePanel,
+                       tagExcludePanel,
+                       tagOtherPanel,
+                       tagIncludeHeaderText,
+                       tagExcludeHeaderText,
+                       TagFilterTypeComboBox,
+                       TagAmountTemplate,
+                       IncludeTagButton_Click,
+                       ExcludeTagButton_Click);
         }
 
         private void TagButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

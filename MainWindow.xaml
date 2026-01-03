@@ -530,29 +530,73 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock x:Name="NoCharacterText"
-                                       Grid.Row="1"
-                                       Padding="10"
-                                       Text="Персонажи не найдены"
-                                       TextWrapping="Wrap"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       TextAlignment="Center"
-                                       Foreground="#999"
-                                       FontStyle="Italic"
-                                       Visibility="Visible"/>
-
                             <!-- Список авторов -->
-                            <ScrollViewer Grid.Row="1"
-                                          Margin="10,10,10,10"
-                                          VerticalScrollBarVisibility="Auto">
-                                <WrapPanel x:Name="CharacterWrapPanel"
-                                           Margin="0,0,10,0"
-                                           Orientation="Horizontal">
-                                    <!-- Авторы будут добавляться динамически -->
+                            <StackPanel Grid.Row="1"
+                                        Margin="10,10,10,10"
+                                        VerticalAlignment="Stretch">
+                                
+                                <!-- Заголовок для включаемых -->
+                                <Border x:Name="characterIncludeHeader"
+                                        Background="#e8f5e9"
+                                        BorderBrush="#4caf50"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="5,3,5,3"
+                                        Margin="0,0,0,5">
+                                <TextBlock x:Name="characterIncludeHeaderText"
+                                           Text="Включать"
+                                           Foreground="#2e7d32"/>
+                                </Border>
 
-                                </WrapPanel>
-                            </ScrollViewer>
+                                <!-- Панель включаемых -->
+                                <ScrollViewer MaxHeight="100"
+                                              VerticalScrollBarVisibility="Auto"
+                                              Margin="0,0,0,10">
+                                    <WrapPanel x:Name="characterIncludePanel"
+                                               Orientation="Horizontal">
+                                    <!-- Включаемые персонажи будут добавляться динамически -->
+                                    </WrapPanel>
+                                </ScrollViewer>
+
+                                <!-- Заголовок для исключаемых -->
+                                <Border x:Name="characterExcludeHeader"
+                                        Background="#ffebee"
+                                        BorderBrush="#f44336"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="5,3,5,3"
+                                        Margin="0,0,0,5">
+                                <TextBlock x:Name="characterExcludeHeaderText"
+                                           Text="Исключать"
+                                           Foreground="#c62828"/>
+                                </Border>
+
+                                <!-- Панель исключаемых -->
+                                <ScrollViewer MaxHeight="100"
+                                              VerticalScrollBarVisibility="Auto"
+                                              Margin="0,0,0,10">
+                                    <WrapPanel x:Name="characterExcludePanel"
+                                               Orientation="Horizontal">
+                                    <!-- Исключаемые персонажи будут добавляться динамически -->
+                                    </WrapPanel>
+                                </ScrollViewer>
+
+                                <!-- Все остальные -->
+                                <Border Background="LightGray"
+                                        BorderBrush="Black"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="5,3,5,3"
+                                        Margin="0,0,0,5">
+                                    <TextBlock Text="Остальные"
+                                               Foreground="Black"/>
+                                </Border>
+
+                                <!-- Панель всех остальных -->
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <WrapPanel x:Name="characterOtherPanel"
+                                               Orientation="Horizontal">
+                                    <!-- Остальные персонажи будут добавляться динамически -->
+                                    </WrapPanel>
+                                </ScrollViewer>
+                            </StackPanel>
 
                             <Grid Grid.Row="2"
                                   Margin="0,0,15,15"
@@ -601,29 +645,73 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock x:Name="NoAuthorText"
-                                       Grid.Row="1"
-                                       Padding="10"
-                                       Text="Авторы не найдены"
-                                       TextWrapping="Wrap"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       TextAlignment="Center"
-                                       Foreground="#999"
-                                       FontStyle="Italic"
-                                       Visibility="Visible"/>
-
                             <!-- Список авторов -->
-                            <ScrollViewer Grid.Row="1"
-                                          Margin="10,10,10,10"
-                                          VerticalScrollBarVisibility="Auto">
-                                <WrapPanel x:Name="AuthorWrapPanel"
-                                           Margin="0,0,10,0"
-                                           Orientation="Horizontal">
-                                    <!-- Авторы будут добавляться динамически -->
+                            <StackPanel Grid.Row="1"
+                                        Margin="10,10,10,10"
+                                        VerticalAlignment="Stretch">
 
-                                </WrapPanel>
-                            </ScrollViewer>
+                                <!-- Заголовок для включаемых -->
+                                <Border x:Name="authorIncludeHeader"
+                                        Background="#e8f5e9"
+                                        BorderBrush="#4caf50"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="5,3,5,3"
+                                        Margin="0,0,0,5">
+                                    <TextBlock x:Name="authorIncludeHeaderText"
+                                               Text="Включать"
+                                               Foreground="#2e7d32"/>
+                                </Border>
+
+                                <!-- Панель включаемых -->
+                                <ScrollViewer MaxHeight="100"
+                                              VerticalScrollBarVisibility="Auto"
+                                              Margin="0,0,0,10">
+                                    <WrapPanel x:Name="authorIncludePanel"
+                                               Orientation="Horizontal">
+                                        <!-- Включаемые персонажи будут добавляться динамически -->
+                                    </WrapPanel>
+                                </ScrollViewer>
+
+                                <!-- Заголовок для исключаемых -->
+                                <Border x:Name="authorExcludeHeader"
+                                        Background="#ffebee"
+                                        BorderBrush="#f44336"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="5,3,5,3"
+                                        Margin="0,0,0,5">
+                                    <TextBlock x:Name="authorExcludeHeaderText"
+                                               Text="Исключать"
+                                               Foreground="#c62828"/>
+                                </Border>
+
+                                <!-- Панель исключаемых -->
+                                <ScrollViewer MaxHeight="100"
+                                              VerticalScrollBarVisibility="Auto"
+                                              Margin="0,0,0,10">
+                                    <WrapPanel x:Name="authorExcludePanel"
+                                               Orientation="Horizontal">
+                                        <!-- Исключаемые персонажи будут добавляться динамически -->
+                                    </WrapPanel>
+                                </ScrollViewer>
+
+                                <!-- Все остальные -->
+                                <Border Background="LightGray"
+                                        BorderBrush="Black"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="5,3,5,3"
+                                        Margin="0,0,0,5">
+                                    <TextBlock Text="Остальные"
+                                               Foreground="Black"/>
+                                </Border>
+
+                                <!-- Панель всех остальных -->
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <WrapPanel x:Name="authorOtherPanel"
+                                               Orientation="Horizontal">
+                                        <!-- Остальные персонажи будут добавляться динамически -->
+                                    </WrapPanel>
+                                </ScrollViewer>
+                            </StackPanel>
 
                             <Grid Grid.Row="2"
                                   Margin="0,0,15,15"
@@ -672,29 +760,73 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock x:Name="NoTagText"
-                                       Grid.Row="1"
-                                       Padding="10"
-                                       Text="Теги не найдены"
-                                       TextWrapping="Wrap"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       TextAlignment="Center"
-                                       Foreground="#999"
-                                       FontStyle="Italic"
-                                       Visibility="Visible"/>
-
                             <!-- Список тегов -->
-                            <ScrollViewer Grid.Row="1"
-                                          Margin="10,10,10,10"
-                                          VerticalScrollBarVisibility="Auto">
-                                <WrapPanel x:Name="TagWrapPanel"
-                                           Margin="0,0,10,0"
-                                           Orientation="Horizontal">
-                                    <!-- Теги будут добавляться динамически -->
+                            <StackPanel Grid.Row="1"
+                                        Margin="10,10,10,10"
+                                        VerticalAlignment="Stretch">
 
-                                </WrapPanel>
-                            </ScrollViewer>
+                                <!-- Заголовок для включаемых -->
+                                <Border x:Name="tagIncludeHeader"
+                                        Background="#e8f5e9"
+                                        BorderBrush="#4caf50"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="5,3,5,3"
+                                        Margin="0,0,0,5">
+                                    <TextBlock x:Name="tagIncludeHeaderText"
+                                               Text="Включать"
+                                               Foreground="#2e7d32"/>
+                                </Border>
+
+                                <!-- Панель включаемых -->
+                                <ScrollViewer MaxHeight="100"
+                                              VerticalScrollBarVisibility="Auto"
+                                              Margin="0,0,0,10">
+                                    <WrapPanel x:Name="tagIncludePanel"
+                                               Orientation="Horizontal">
+                                        <!-- Включаемые персонажи будут добавляться динамически -->
+                                    </WrapPanel>
+                                </ScrollViewer>
+
+                                <!-- Заголовок для исключаемых -->
+                                <Border x:Name="tagExcludeHeader"
+                                        Background="#ffebee"
+                                        BorderBrush="#f44336"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="5,3,5,3"
+                                        Margin="0,0,0,5">
+                                    <TextBlock x:Name="tagExcludeHeaderText"
+                                               Text="Исключать"
+                                               Foreground="#c62828"/>
+                                </Border>
+
+                                <!-- Панель исключаемых -->
+                                <ScrollViewer MaxHeight="100"
+                                              VerticalScrollBarVisibility="Auto"
+                                              Margin="0,0,0,10">
+                                    <WrapPanel x:Name="tagExcludePanel"
+                                               Orientation="Horizontal">
+                                        <!-- Исключаемые персонажи будут добавляться динамически -->
+                                    </WrapPanel>
+                                </ScrollViewer>
+
+                                <!-- Все остальные -->
+                                <Border Background="LightGray"
+                                        BorderBrush="Black"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="5,3,5,3"
+                                        Margin="0,0,0,5">
+                                    <TextBlock Text="Остальные"
+                                               Foreground="Black"/>
+                                </Border>
+
+                                <!-- Панель всех остальных -->
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <WrapPanel x:Name="tagOtherPanel"
+                                               Orientation="Horizontal">
+                                        <!-- Остальные персонажи будут добавляться динамически -->
+                                    </WrapPanel>
+                                </ScrollViewer>
+                            </StackPanel>
 
                             <Grid Grid.Row="2"
                                   Margin="0,0,15,15"
