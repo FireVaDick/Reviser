@@ -533,11 +533,11 @@
                             <Grid Margin="10,10,10,10"
                                   VerticalAlignment="Stretch">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="34"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="34"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="34"/>
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
@@ -657,11 +657,11 @@
                                   Margin="10,10,10,10"
                                   VerticalAlignment="Stretch">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="34"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="34"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="34"/>
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
@@ -781,11 +781,11 @@
                                   Margin="10,10,10,10"
                                   VerticalAlignment="Stretch">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="34"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="34"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="36"/>
+                                    <RowDefinition Height="34"/>
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
