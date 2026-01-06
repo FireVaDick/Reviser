@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -935,7 +936,7 @@ namespace Reviser
             if (TagExcludePanel != null) TagExcludePanel.Children.Clear();
             if (TagOtherPanel != null) TagOtherPanel.Children.Clear();
 
-            Count.Text = "Всего: 0";
+            Count.Text = "Всего изображений: 0";
             ClearImagePreview();
         }
         #endregion
@@ -1165,6 +1166,30 @@ namespace Reviser
         private void ShowOtherActionGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ShowCurrentActionGrid(OtherActionGrid);
+        }
+        #endregion
+
+
+
+        #region Переключатели столбцов окна
+        private void LeftSide_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ChangeColumnVisibility(LeftColumn);
+        }
+
+        private void RightSide_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ChangeColumnVisibility(RightColumn);
+        }
+
+        private void ChangeColumnVisibility(ColumnDefinition column)
+        {
+            if (column.Width == new GridLength(0, GridUnitType.Pixel) || column.Width == new GridLength(0, GridUnitType.Star))
+            {
+                column.Width = new GridLength(1, GridUnitType.Star);
+            }
+            else column.Width = new GridLength(0, GridUnitType.Pixel);
+
         }
         #endregion
 
@@ -2524,7 +2549,7 @@ namespace Reviser
             var classedCollection = GetClassedCollectionForDataGrid(currentDataGrid);
             if (classedCollection == null) return;
 
-            Count.Text = $"Всего: {classedCollection.Count}";
+            Count.Text = $"Всего изображений: {classedCollection.Count}";
         }
 
         private static string FormatFileSize(long bytes)

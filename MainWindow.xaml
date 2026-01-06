@@ -59,7 +59,7 @@
         <SolidColorBrush x:Key="DataGridInactiveSelectionHighlightTextBrush" Color="Black"/>
     </Window.Resources>
     
-    <Grid>
+    <Grid Name="MainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -68,9 +68,9 @@
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" Name="LeftColumn" />
+            <ColumnDefinition Width="2*" Name="CenterColumn" />
+            <ColumnDefinition Width="*" Name="RightColumn" />
         </Grid.ColumnDefinitions>
 
       
@@ -1108,7 +1108,7 @@
         
         <!--Внизу-->
         <TextBlock Name="Count" 
-                   Grid.Row="2" Grid.Column="1"
+                   Grid.Row="2" Grid.Column="0"
                    Margin="20,0,0,10"
                    Height="24"  
                    HorizontalAlignment="Left"
@@ -1117,34 +1117,48 @@
         <!-- Панель управления загрузкой -->
         <Grid Grid.Row="2" Grid.Column="1"
               Margin="0,0,0,15">
+            <local:Controller x:Name="LeftSide"
+                              Margin="15,0,0,0"
+                              Purpose="Action"                      
+                              Command="&lt;"    
+                              HorizontalAlignment="Left"
+                              MouseLeftButtonDown="LeftSide_MouseLeftButtonDown" />
+
+            <local:Controller x:Name="RightSide"
+                              Margin="0,0,15,0"
+                              Purpose="Action"                      
+                              Command="&gt;"
+                              Visibility="Visible"
+                              HorizontalAlignment="Right"
+                              MouseLeftButtonDown="RightSide_MouseLeftButtonDown" />
+
+
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
                 <local:Controller x:Name="ChooseImage"
-                              Purpose="Action"                      
-                              Command="Выбрать файл"
-                              MouseLeftButtonDown="ChooseImage_MouseLeftButtonDown" />
+                                  Purpose="Action"                      
+                                  Command="Выбрать файл"
+                                  MouseLeftButtonDown="ChooseImage_MouseLeftButtonDown" />
 
                 <local:Controller x:Name="LoadFullTable"
-                              Margin="10,0,0,0"
-                              Purpose="Action"                      
-                              Command="Загрузить таблицу"
-                              MouseLeftButtonDown="LoadFullTable_MouseLeftButtonDown" />
+                                  Margin="10,0,0,0"
+                                  Purpose="Action"                      
+                                  Command="Загрузить таблицу"
+                                  MouseLeftButtonDown="LoadFullTable_MouseLeftButtonDown" />
 
                 <local:Controller x:Name="CleanEverything"
-                              Margin="10,0,0,0"
-                              Purpose="Action"                      
-                              Command="Очистить"
-                              MouseLeftButtonDown="CleanEverything_MouseLeftButtonDown" />
-            </StackPanel>
+                                  Margin="10,0,0,0"
+                                  Purpose="Action"                      
+                                  Command="Очистить"
+                                  MouseLeftButtonDown="CleanEverything_MouseLeftButtonDown" />
 
-            <local:Controller x:Name="Cancel"
-                              Grid.Row="2" Grid.Column="1"
-                              Margin="0,0,15,0"
-                              Purpose="Action"                      
-                              Command="||"
-                              Visibility="Collapsed"
-                              HorizontalAlignment="Right"
-                              MouseLeftButtonDown="Cancel_MouseLeftButtonDown" />
+                <local:Controller x:Name="Cancel"
+                                  Margin="10,0,0,0"
+                                  Purpose="Action"                      
+                                  Command="||"
+                                  Visibility="Collapsed"
+                                  MouseLeftButtonDown="Cancel_MouseLeftButtonDown" />
+            </StackPanel>
         </Grid>
 
 
