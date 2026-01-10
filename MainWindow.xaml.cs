@@ -29,6 +29,7 @@ namespace Reviser
 
         private double ratioEdgeTemplate = 0.15;
         private int maxAmountTemplate = 100;
+        private int minAuthorTemplate = 50;
 
         private int characterAmountTemplate = 2;
         private int authorAmountTemplate = 2;
@@ -93,6 +94,15 @@ namespace Reviser
             }
         }
 
+        public int MinAuthorTemplate
+        {
+            get => minAuthorTemplate;
+            set
+            {
+                minAuthorTemplate = value;
+                OnPropertyChanged();
+            }
+        }
         public int CharacterAmountTemplate
         {
             get => characterAmountTemplate;
@@ -1858,7 +1868,274 @@ namespace Reviser
 
 
 
-        #region Дополнительные действия
+        #region Перенос по текущей конфигураии
+        private void CreateCurrentConfigFolder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            string tableType = GetCurrentTableType();
+            string classes = GetEnabledClassesString();
+            string filters = GetCurrentFiltersString();
+            string folderName = CreateConfigFolderName(tableType, classes, filters);
+            string folderPath = Path.Combine(directoryPath, folderName);
+            Directory.CreateDirectory(folderPath);
+
+            var itemsToMove = GetCurrentDataGridItems();
+
+            MoveFilesToConfigFolder(itemsToMove, folderPath);
+        }
+
+        private string GetCurrentTableType()
+        {
+            if (currentDataGrid == AllDataGrid) return "AllImages";
+            if (currentDataGrid == CharacterDataGrid) return "Character";
+            if (currentDataGrid == AuthorDataGrid) return "Author";
+            if (currentDataGrid == TagDataGrid) return "Tag";
+            if (currentDataGrid == ReplaceDataGrid) return "Replace";
+            if (currentDataGrid == MoveDataGrid) return "Move";
+            return "Unknown";
+        }
+
+        private string GetEnabledClassesString()
+        {
+            if (enabledClasses == null || enabledClasses.Count == 0)
+                return "{}";
+
+            // Сортируем классы для единообразия
+            var sortedClasses = enabledClasses.OrderBy(c => c).ToList();
+            return $"{{{string.Join(", ", sortedClasses)}}}";
+        }
+
+        private string GetCurrentFiltersString()
+        {
+            List<string> filters = new List<string>();
+
+            // Проверяем, какая таблица активна и какие фильтры применены
+            if (currentDataGrid == CharacterDataGrid)
+            {
+                if (includeCharacters.Count > 0)
+                {
+                    var sortedCharacters = includeCharacters.OrderBy(c => c).ToList();
+                    if (sortedCharacters.Count == 1)
+                    {
+                        filters.Add($"[{sortedCharacters[0]}]");
+                    }
+                    else
+                    {
+                        filters.Add($"[{string.Join(" & ", sortedCharacters)}]");
+                    }
+                }
+
+                if (excludeCharacters.Count > 0)
+                {
+                    var sortedExclude = excludeCharacters.OrderBy(c => c).ToList();
+                    filters.Add($"!{{{string.Join(" & ", sortedExclude)}}}");
+                }
+            }
+            else if (currentDataGrid == AuthorDataGrid)
+            {
+                if (includeAuthors.Count > 0)
+                {
+                    var sortedAuthors = includeAuthors.OrderBy(a => a).ToList();
+                    if (sortedAuthors.Count == 1)
+                    {
+                        filters.Add($"[{sortedAuthors[0]}]");
+                    }
+                    else
+                    {
+                        filters.Add($"[{string.Join(" & ", sortedAuthors)}]");
+                    }
+                }
+
+                if (excludeAuthors.Count > 0)
+                {
+                    var sortedExclude = excludeAuthors.OrderBy(a => a).ToList();
+                    filters.Add($"!{{{string.Join(" & ", sortedExclude)}}}");
+                }
+            }
+            else if (currentDataGrid == TagDataGrid)
+            {
+                if (includeTags.Count > 0)
+                {
+                    var sortedTags = includeTags.OrderBy(t => t).ToList();
+                    if (sortedTags.Count == 1)
+                    {
+                        filters.Add($"[{sortedTags[0]}]");
+                    }
+                    else
+                    {
+                        filters.Add($"[{string.Join(" & ", sortedTags)}]");
+                    }
+                }
+
+                if (excludeTags.Count > 0)
+                {
+                    var sortedExclude = excludeTags.OrderBy(t => t).ToList();
+                    filters.Add($"!{{{string.Join(" & ", sortedExclude)}}}");
+                }
+            }
+
+            return filters.Count > 0 ? string.Join(" ", filters) : "";
+        }
+
+        private string CreateConfigFolderName(string tableType, string classes, string filters)
+        {
+            string folderName = $"{tableType}";
+
+            if (!string.IsNullOrEmpty(filters))
+            {
+                folderName += $" {filters}";
+            }
+
+            folderName += $" {classes}";
+
+            // Заменяем недопустимые символы в имени папки
+            folderName = CleanFolderName(folderName);
+
+            return folderName.Trim();
+        }
+
+        private string CleanFolderName(string folderName)
+        {
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            foreach (char invalidChar in invalidChars)
+            {
+                folderName = folderName.Replace(invalidChar, '-');
+            }
+
+            // Также заменяем другие проблемные символы
+            folderName = folderName.Replace(':', '-');
+            folderName = folderName.Replace('*', '-');
+            folderName = folderName.Replace('?', '-');
+            folderName = folderName.Replace('"', '-');
+            folderName = folderName.Replace('<', '-');
+            folderName = folderName.Replace('>', '-');
+            folderName = folderName.Replace('|', '-');
+
+            // Убираем двойные пробелы
+            while (folderName.Contains("  "))
+            {
+                folderName = folderName.Replace("  ", " ");
+            }
+
+            return folderName;
+        }
+
+        private ObservableCollection<ImageInfoItem> GetCurrentDataGridItems()
+        {
+            if (currentDataGrid == AllDataGrid) return classedAllImageItems;
+            if (currentDataGrid == CharacterDataGrid) return classedCharacterImageItems;
+            if (currentDataGrid == AuthorDataGrid) return classedAuthorImageItems;
+            if (currentDataGrid == TagDataGrid) return classedTagImageItems;
+
+            // Для таблиц Replace и Move возвращаем пустую коллекцию
+            // или преобразуем их в ImageInfoItem если нужно
+            return new ObservableCollection<ImageInfoItem>();
+        }
+
+        private void MoveFilesToConfigFolder(ObservableCollection<ImageInfoItem> items, string folderPath)
+        {
+            if (items == null || items.Count == 0)
+            {
+                MessageBox.Show("Нет файлов для перемещения в текущей таблице", "Информация",
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            int movedCount = 0;
+            int errorCount = 0;
+
+            // Создаем копию для безопасной итерации
+            var itemsToProcess = items.ToList();
+
+            foreach (var item in itemsToProcess)
+            {
+                try
+                {
+                    if (!File.Exists(item.FilePath))
+                    {
+                        errorCount++;
+                        continue;
+                    }
+
+                    string fileName = Path.GetFileName(item.FilePath);
+                    string currentDir = Path.GetDirectoryName(item.FilePath);
+
+                    // Проверяем, не находится ли файл уже в целевой папке
+                    if (currentDir.Equals(folderPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    // Создаем уникальный путь для файла
+                    string destPath = GetUniqueFilePath(folderPath, fileName);
+
+                    // Перемещаем файл
+                    File.Move(item.FilePath, destPath);
+
+                    // Обновляем путь в элементе таблицы
+                    item.FilePath = destPath;
+                    movedCount++;
+                }
+                catch (Exception ex)
+                {
+                    errorCount++;
+                    Debug.WriteLine($"Ошибка при перемещении файла {item.FileName}: {ex.Message}");
+                }
+            }
+
+            // Показываем результат
+            string folderShortName = Path.GetFileName(folderPath);
+            MessageBox.Show($"Создание папки конфигурации завершено!\n\n" +
+                           $"Папка: {folderShortName}\n" +
+                           $"Перемещено файлов: {movedCount}\n" +
+                           $"Ошибок: {errorCount}",
+                           "Результат",
+                           MessageBoxButton.OK); 
+        }
+
+        private string GetUniqueFilePath(string folderPath, string fileName)
+        {
+            string destPath = Path.Combine(folderPath, fileName);
+
+            if (!File.Exists(destPath))
+            {
+                return destPath;
+            }
+
+            string nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+            string extension = Path.GetExtension(fileName);
+            int counter = 1;
+
+            do
+            {
+                destPath = Path.Combine(folderPath, $"{nameWithoutExt}_{counter}{extension}");
+                counter++;
+            } while (File.Exists(destPath));
+
+            return destPath;
+        }
+        #endregion
+
+
+
+        #region Перенос в новые папки
+        private void CreateClassFolders_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Все возможные классы
+            string[] allClasses = { "1s", "2e", "3n", "4c", "5j", "6h" };
+
+            // Используем базовый класс FolderOperation
+            var result = FolderOperation.MoveFilesToFolders(
+                classedAllImageItems,
+                directoryPath,
+                (item, index) =>
+                {
+                    string classFolderPath = Path.Combine(directoryPath, item.Class);
+                    return classFolderPath;
+                });
+
+            ShowResultMessage($"Сортировка по классам завершена!\nСоздано папок: {allClasses.Length}", result);
+        }
+
         private void CreateRatioEdgeFolders_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             // Создаем подпапки
@@ -1927,16 +2204,105 @@ namespace Reviser
             ShowResultMessage($"Сортировка по количеству файлов завершена!\nСоздано папок: {foldersCount}", result);
         }
 
+        private void CreateMinAuthorFolders_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (MinAuthorTemplate <= 0)
+            {
+                MessageBox.Show("Минимальное количество изображений должно быть больше 0", "Ошибка",
+                               MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var qualifiedAuthors = authorStatistics
+                .Where(kvp => kvp.Value >= MinAuthorTemplate)
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            if (qualifiedAuthors.Count == 0)
+            {
+                MessageBox.Show($"Нет авторов с {MinAuthorTemplate} или более изображениями", "Информация",
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            foreach (var author in qualifiedAuthors)
+            {
+                string authorFolderPath = Path.Combine(directoryPath, author);
+                Directory.CreateDirectory(authorFolderPath);
+            }
+
+            var itemsToProcess = classedAllImageItems.ToList();
+            int movedCount = 0;
+            int errorCount = 0;
+
+            foreach (var item in itemsToProcess)
+            {
+                try
+                {
+                    if (!File.Exists(item.FilePath))
+                    {
+                        errorCount++;
+                        continue;
+                    }
+
+                    // Находим всех подходящих авторов для этого файла
+                    var itemQualifiedAuthors = item.AuthorList?
+                        .Where(author => qualifiedAuthors.Contains(author))
+                        .ToList();
+
+                    // Если у файла нет подходящих авторов - пропускаем
+                    if (itemQualifiedAuthors == null || itemQualifiedAuthors.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    // Получаем информацию о файле
+                    string fileName = Path.GetFileName(item.FilePath);
+                    string currentDir = Path.GetDirectoryName(item.FilePath);
+
+                    if (itemQualifiedAuthors.Count == 1)
+                    {
+                        string author = itemQualifiedAuthors[0];
+                        string authorFolderPath = Path.Combine(directoryPath, author);
+
+                        // Проверяем, не находится ли файл уже в правильной папке
+                        if (currentDir.Equals(authorFolderPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        // Перемещаем файл
+                        string destPath = GetUniqueFilePath(authorFolderPath, fileName);
+                        File.Move(item.FilePath, destPath);
+
+                        // Обновляем путь в элементе таблицы
+                        item.FilePath = destPath;
+                        movedCount++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errorCount++;
+                    Debug.WriteLine($"Ошибка при обработке файла {item.FileName}: {ex.Message}");
+                }
+            }
+
+            MessageBox.Show($"Сортировка по авторам завершена!\n\n" +
+                           $"Подходящих авторов: {qualifiedAuthors.Count}\n" +
+                           $"Перемещено файлов: {movedCount}\n" +
+                           $"Ошибок: {errorCount}",
+                           "Результат",
+                           MessageBoxButton.OK);
+        }
+
         private void ShowResultMessage(string title, (int movedCount, int errorCount, int alreadySortedCount) result)
         {
             MessageBox.Show($"{title}\n\n" +
                                $"Перемещено файлов: {result.movedCount}\n" +
-                               $"Уже отсортировано: {result.alreadySortedCount}\n" +
-                               $"Ошибок: {result.errorCount}\n\n" +
-                               $"Сейчас таблица будет очищена",
+                               //$"Уже отсортировано: {result.alreadySortedCount}\n" +
+                               $"Ошибок: {result.errorCount}",
                                "Информация",
                                MessageBoxButton.OK);
-            Clean();
         }
         #endregion
 
@@ -1949,7 +2315,7 @@ namespace Reviser
             var items = await LoadImageNameFilesAsync(moveImageFiles);
 
             // Определяем порядок сортировки для тегов с буквой 'f'
-            var tagOrder = new List<string> { "fb00", "fbe11", "fa55", "fh1p", "fd1ck" };
+            var tagOrder = new List<string> { "fb00", "fbe11", "fa55", "fl3g", "fd1ck" };
 
             // Обрабатываем каждый файл
             foreach (var item in items)

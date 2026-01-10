@@ -1039,6 +1039,9 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -1047,15 +1050,48 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <local:Controller x:Name="CreateMaxAmountFolders"
-                                      Grid.Row="0" Grid.Column="0"
+                    <local:Controller x:Name="CreateCurrentConfigFolder"
+                                      Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                      Margin="0,10,0,0"
                                       Purpose="Action"                      
-                                      Command="Раскидать по количеству"
+                                      Command="По текущей конфигурации таблицы"
+                                      MouseLeftButtonDown="CreateCurrentConfigFolder_MouseLeftButtonDown" />
+
+                    <local:Controller x:Name="CreateClassFolders"
+                                      Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                      Margin="0,10,0,0"
+                                      Purpose="Action"                      
+                                      Command="Раскидать по вообще всем классам"
+                                      MouseLeftButtonDown="CreateClassFolders_MouseLeftButtonDown" />
+
+                    <local:Controller x:Name="CreateRatioEdgeFolders"
+                                 Grid.Row="2" Grid.Column="0"
+                                 Margin="0,10,0,0"
+                                 Purpose="Action"                      
+                                 Command="По разбросу ориентации"
+                                 MouseLeftButtonDown="CreateRatioEdgeFolders_MouseLeftButtonDown" />
+
+                    <TextBox Name="RatioEdgeTextBox"
+                        Grid.Row="2" Grid.Column="1"
+                        Margin="13,11,0,0"
+                        Width="50" Height="35"
+                        FontSize="18"
+                        TextAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Text="{Binding RatioEdgeTemplate, 
+                                       UpdateSourceTrigger=PropertyChanged,
+                                       Mode=TwoWay}"/>
+                   
+                    <local:Controller x:Name="CreateMaxAmountFolders"
+                                      Grid.Row="3" Grid.Column="0"
+                                      Margin="0,10,0,0"
+                                      Purpose="Action"                      
+                                      Command="По макс. количеству в папке"
                                       MouseLeftButtonDown="CreateMaxAmountFolders_MouseLeftButtonDown" />
 
                     <TextBox Name="MaxAmountTextBox"
-                             Grid.Row="0" Grid.Column="1"
-                             Margin="13,1,0,0"
+                             Grid.Row="3" Grid.Column="1"
+                             Margin="13,11,0,0"
                              Width="50" Height="35"
                              FontSize="18"
                              TextAlignment="Center"
@@ -1063,35 +1099,34 @@
                              Text="{Binding MaxAmountTemplate, 
                                             UpdateSourceTrigger=PropertyChanged,
                                             Mode=TwoWay}"/>
-
-                    <local:Controller x:Name="CreateRatioEdgeFolders"
-                                      Grid.Row="1" Grid.Column="0"
+   
+                    <local:Controller x:Name="CreateMinAuthorFolders"
+                                      Grid.Row="4" Grid.Column="0"
                                       Margin="0,10,0,0"
                                       Purpose="Action"                      
-                                      Command="Раскидать по ориентации"
-                                      MouseLeftButtonDown="CreateRatioEdgeFolders_MouseLeftButtonDown" />
+                                      Command="По мин. количеству авторов"
+                                      MouseLeftButtonDown="CreateMinAuthorFolders_MouseLeftButtonDown" />
 
-                    <TextBox Name="RatioEdgeTextBox"
-                             Grid.Row="1" Grid.Column="1"
+                    <TextBox Name="MinAuthorTextBox"
+                             Grid.Row="4" Grid.Column="1"
                              Margin="13,11,0,0"
                              Width="50" Height="35"
                              FontSize="18"
                              TextAlignment="Center"
                              VerticalContentAlignment="Center"
-                             Text="{Binding RatioEdgeTemplate, 
+                             Text="{Binding MinAuthorTemplate, 
                                             UpdateSourceTrigger=PropertyChanged,
                                             Mode=TwoWay}"/>
 
-
                     <local:Controller x:Name="SortTags"
-                                      Grid.Row="2" Grid.Column="0"
-                                      Margin="0,10,0,0"
+                                      Grid.Row="5" Grid.Column="0"
+                                      Margin="0,25,0,0"
                                       Purpose="Action"                      
                                       Command="Отсортировать теги фокуса"
                                       MouseLeftButtonDown="SortTags_MouseLeftButtonDown" />
 
                     <local:Controller x:Name="MoveAuthorsToBrackets"
-                                      Grid.Row="3" Grid.Column="0"
+                                      Grid.Row="6" Grid.Column="0"
                                       Margin="0,10,0,0"
                                       Purpose="Action"                      
                                       Command="Переименовать оригиналы"
