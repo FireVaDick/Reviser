@@ -2553,6 +2553,73 @@ namespace Reviser
 
 
 
+        #region Задать базовый шаблон {1s} @1g
+        private async void AddTemplate1S1G_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Загружаем файлы для обработки
+            var items = await LoadImageNameFilesAsync(replaceImageFiles);
+
+            // Обрабатываем каждый файл
+            foreach (var item in items)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(item.OriginalName);
+                string extension = Path.GetExtension(item.OriginalName);
+
+                // Парсим имя файла для получения информации
+                var parsed = PartsOfImageName.ParseImageNameIntoParts(item.OriginalName);
+
+                // Проверяем, нужно ли добавлять элементы
+                bool shouldAddClass = string.IsNullOrEmpty(parsed.Class) || parsed.Class == "1s";
+                bool shouldAddTag = (parsed.TagList == null || parsed.TagList.Count == 0);
+
+                if (shouldAddClass && shouldAddTag)
+                {
+                    // Формируем новое имя
+                    string newFileName;
+
+                    if (string.IsNullOrEmpty(parsed.Number))
+                    {
+                        // Если нет номера, добавляем класс и тег в конец
+                        newFileName = $"{parsed.Character} [{parsed.Author}] {{1s}} @1g{extension}";
+                    }
+                    else
+                    {
+                        // Если есть номер, добавляем класс перед номером, тег после
+                        newFileName = $"{parsed.Character} [{parsed.Author}] {{1s}} {parsed.Number} @1g{extension}";
+                    }
+
+                    item.NewName = newFileName;
+                }
+                else
+                {
+                    // Не нужно переименовывать
+                    item.NewName = item.OriginalName;
+                }
+            }
+
+            // Обновляем UI
+            replaceImageFiles.Clear();
+            foreach (var item in items)
+            {
+                replaceImageFiles.Add(item);
+            }
+
+            // Показываем таблицу с результатами
+            var args = new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+            {
+                RoutedEvent = UIElement.MouseLeftButtonDownEvent,
+                Source = ShowReplaceDataGrid
+            };
+
+            ShowReplaceDataGrid.RaiseEvent(args);
+            ShowCurrentDataGrid(ReplaceDataGrid);
+
+            // Сразу применяем переименование
+            RenameSave(replaceImageFiles);
+        }
+        #endregion
+
+
         #region Подгрузка и сохранение
         private async Task<ObservableCollection<ImageNewName>> LoadImageNameFilesAsync(ObservableCollection<ImageNewName> imageNewNames)
         {

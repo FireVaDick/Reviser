@@ -1034,8 +1034,9 @@
                 <Grid Name="OtherActionGrid"
                       Visibility="Collapsed"
                       HorizontalAlignment="Center"
-                      Margin="0,10,0,15">
+                      Margin="0,10,0,5">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -1132,6 +1133,12 @@
                                       Command="Переименовать оригиналы"
                                       MouseLeftButtonDown="MoveAuthorsToBrackets_MouseLeftButtonDown" />
 
+                    <local:Controller x:Name="AddTemplate1S1G"
+                                      Grid.Row="7" Grid.Column="0"
+                                      Margin="0,10,0,0"
+                                      Purpose="Action"                      
+                                      Command="Задать шаблон {1s} и @1g"
+                                      MouseLeftButtonDown="AddTemplate1S1G_MouseLeftButtonDown" />
 
                 </Grid>
             </Grid>
