@@ -36,25 +36,25 @@
                     <Setter Property="Background" Value="#EBEBEB"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding BackColor}" Value="#002">
-                    <Setter Property="Background" Value="#9CFF98"/>
+                    <Setter Property="Background" Value="#b2f69e"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding BackColor}" Value="#003">
-                    <Setter Property="Background" Value="#FFFB83"/>
+                    <Setter Property="Background" Value="#f2ee88"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding BackColor}" Value="#004">
-                    <Setter Property="Background" Value="#FCB5D7"/>
+                    <Setter Property="Background" Value="#f9b7e1"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding BackColor}" Value="#005">
-                    <Setter Property="Background" Value="#F8B079"/>
+                    <Setter Property="Background" Value="#f8b683"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding BackColor}" Value="#006">
-                    <Setter Property="Background" Value="#EC6A7A"/>
+                    <Setter Property="Background" Value="#f87e8d"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
-        <SolidColorBrush x:Key="DataGridHighlightBrush" Color="#87ABF4"/>
-        <SolidColorBrush x:Key="DataGridInactiveSelectionHighlightBrush" Color="#AEC2EB"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#7db7f0"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black"/>
         <SolidColorBrush x:Key="DataGridHighlightTextBrush" Color="Black"/>
         <SolidColorBrush x:Key="DataGridInactiveSelectionHighlightTextBrush" Color="Black"/>
     </Window.Resources>
@@ -96,7 +96,7 @@
                 <local:AnyMenuOption x:Name="Class2e"
                                      GroupName="ClassGroup"
                                      Command="2e"
-                                     ClickedColor="#9CFF98"
+                                     ClickedColor="#b2f69e"
                                      Width="35"
                                      MouseLeftButtonDown="Class2e_MouseButtonDown" 
                                      MouseRightButtonDown="Class2e_MouseButtonDown" />
@@ -104,7 +104,7 @@
                 <local:AnyMenuOption x:Name="Class3n"
                                      GroupName="ClassGroup"
                                      Command="3n"
-                                     ClickedColor="#FFFB83"
+                                     ClickedColor="#f2ee88"
                                      Width="35"
                                      MouseLeftButtonDown="Class3n_MouseButtonDown" 
                                      MouseRightButtonDown="Class3n_MouseButtonDown" />
@@ -112,7 +112,7 @@
                 <local:AnyMenuOption x:Name="Class4c"
                                      GroupName="ClassGroup"
                                      Command="4c"
-                                     ClickedColor="#FCB5D7"
+                                     ClickedColor="#f9b7e1"
                                      Width="35"
                                      MouseLeftButtonDown="Class4c_MouseButtonDown" 
                                      MouseRightButtonDown="Class4c_MouseButtonDown" />
@@ -120,7 +120,7 @@
                 <local:AnyMenuOption x:Name="Class5j"
                                      GroupName="ClassGroup"
                                      Command="5j"
-                                     ClickedColor="#F8B079"
+                                     ClickedColor="#f8b683"
                                      Width="35"
                                      MouseLeftButtonDown="Class5j_MouseButtonDown" 
                                      MouseRightButtonDown="Class5j_MouseButtonDown" />
@@ -128,11 +128,20 @@
                 <local:AnyMenuOption x:Name="Class6h"
                                      GroupName="ClassGroup"
                                      Command="6h"
-                                     ClickedColor="#EC6A7A"
+                                     ClickedColor="#f87e8d"
                                      Width="35"
                                      MouseLeftButtonDown="Class6h_MouseButtonDown" 
                                      MouseRightButtonDown="Class6h_MouseButtonDown" />
             </StackPanel>
+
+            <local:AnyMenuOption x:Name="IsSearchParent"
+                                 GroupName="LevelGroup"
+                                 IsChecked="False"
+                                 Command="Ур. выше"
+                                 ClickedColor="#aec2eb"
+                                 Width="75"
+                                 HorizontalAlignment="Right"
+                                 MouseLeftButtonDown="IsSearchParent_MouseLeftButtonDown" />
 
             <Border Grid.Row="1" 
                     Background="#fff"
@@ -608,15 +617,23 @@
 
                             <Grid Grid.Row="1"
                                   Margin="0,0,15,15"
-                                  Height="35"
-                                  HorizontalAlignment="Right">
+                                  Height="40"
+                                  HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
+                                <local:Controller Grid.Column="0"
+                                                  Margin="15,0,0,0"
+                                                  Purpose="Action"                      
+                                                  Command="Сбросить"
+                                                  MouseLeftButtonDown="ResetCharacterFilters_MouseLeftButtonDown" />
+
                                 <ComboBox Name="CharacterFilterTypeComboBox"
-                                          Grid.Column="0"
+                                          Grid.Column="2"
                                           Width="50"
                                           Margin="0,0,-1,0"
                                           FontSize="16"
@@ -627,7 +644,7 @@
                                 </ComboBox>
 
                                 <TextBox Name="CharacterAmountTextBox"
-                                         Grid.Column="1"
+                                         Grid.Column="3"
                                          Width="50" 
                                          FontSize="18"
                                          TextAlignment="Center"
@@ -732,15 +749,23 @@
 
                             <Grid Grid.Row="1"
                                   Margin="0,0,15,15"
-                                  Height="35"
-                                  HorizontalAlignment="Right">
+                                  Height="40"
+                                  HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
+                                <local:Controller Grid.Column="0"
+                                                  Margin="15,0,0,0"
+                                                  Purpose="Action"                      
+                                                  Command="Сбросить"
+                                                  MouseLeftButtonDown="ResetAuthorFilters_MouseLeftButtonDown" />
+
                                 <ComboBox Name="AuthorFilterTypeComboBox"
-                                          Grid.Column="0"
+                                          Grid.Column="2"
                                           Width="50"
                                           Margin="0,0,-1,0"
                                           FontSize="16"
@@ -751,7 +776,7 @@
                                 </ComboBox>
                                 
                                 <TextBox Name="AuthorAmountTextBox"
-                                         Grid.Column="1"
+                                         Grid.Column="3"
                                          Width="50"
                                          FontSize="18"
                                          TextAlignment="Center"
@@ -856,15 +881,23 @@
 
                             <Grid Grid.Row="1"
                                   Margin="0,0,15,15"
-                                  Height="35"
-                                  HorizontalAlignment="Right">
+                                  Height="40"
+                                  HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
+                                <local:Controller Grid.Column="0"
+                                                  Margin="15,0,0,0"
+                                                  Purpose="Action"                      
+                                                  Command="Сбросить"
+                                                  MouseLeftButtonDown="ResetTagFilters_MouseLeftButtonDown" />
+
                                 <ComboBox Name="TagFilterTypeComboBox"
-                                          Grid.Column="0"
+                                          Grid.Column="2"
                                           Width="50"
                                           SelectedIndex="0"
                                           Margin="0,0,-1,0"
@@ -873,11 +906,10 @@
                                           SelectionChanged="TagFilterTypeComboBox_SelectionChanged">
                                     <ComboBoxItem IsSelected="True" Content="&gt;="/>
                                     <ComboBoxItem Content="&lt;="/>
-                           
                                 </ComboBox>
                                 
                                 <TextBox Name="TagAmountTextBox"
-                                         Grid.Column="1"
+                                         Grid.Column="3"
                                          Width="50"
                                          VerticalContentAlignment="Center"
                                          TextAlignment="Center"
@@ -1158,7 +1190,7 @@
 
         <!-- Панель управления загрузкой -->
         <Grid Grid.Row="2" Grid.Column="1"
-              Margin="0,0,0,15">
+              Margin="0,0,0,10">
             <local:Controller x:Name="LeftSide"
                               Margin="15,0,0,0"
                               Purpose="Action"                      
@@ -1203,33 +1235,12 @@
             </StackPanel>
         </Grid>
 
-
-        <Grid Grid.Row="2" Grid.Column="2"
-              Margin="5,0,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            
-            <TextBlock Name="SelectedFolder"                 
-                       Grid.Row="0"
-                       Text="Папка не выбрана"                     
-                       HorizontalAlignment="Left"
-                       TextAlignment="Left"/>
-
-            <CheckBox Name="IsSearchParent"
-                      Grid.Row="1"
-                      Margin="0,5,0,0"
-                      Checked="IsSearchParent_Checked"
-                      Unchecked="IsSearchParent_Checked" >
-                <TextBlock Margin="2,-1,0,0" 
-                           Text="Искать на уровень выше"/>
-            </CheckBox>
-        </Grid>
-        
-        
-
-
+        <TextBlock Name="SelectedFolder"                 
+                   Grid.Row="3" Grid.Column="1"
+                   Margin="0,0,0,15"
+                   Text="Папка не выбрана"                     
+                   HorizontalAlignment="Center"
+                   TextAlignment="Left"/>
 
 
     </Grid>

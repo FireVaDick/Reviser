@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -31,9 +30,9 @@ namespace Reviser
         private int maxAmountTemplate = 100;
         private int minAuthorTemplate = 50;
 
-        private int characterAmountTemplate = 2;
-        private int authorAmountTemplate = 2;
-        private int tagAmountTemplate = 5;
+        private int characterAmountTemplate = 20;
+        private int authorAmountTemplate = 20;
+        private int tagAmountTemplate = 50;
 
         private bool characterListNeedsUpdate = false;
         private bool authorListNeedsUpdate = false;
@@ -195,6 +194,7 @@ namespace Reviser
             ReplaceDataGrid.ItemsSource = replaceImageFiles;
 
             currentDataGrid = AllDataGrid;
+            this.PreviewKeyDown += MainWindow_PreviewKeyDown;
 
             SetTimers(2);
 
@@ -270,7 +270,80 @@ namespace Reviser
                     CancelEdit();
                     e.Handled = true;
                     break;
+                case Key.Down:
+                    MoveSelection(1);
+                    e.Handled = true;
+                    break;
+                case Key.Up:
+                    MoveSelection(-1);
+                    e.Handled = true;
+                    break;
             }
+        }
+
+        private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Перехватываем стрелки до того, как их обработают другие элементы
+            if (e.Key == Key.Down || e.Key == Key.Up)
+            {
+                // Если есть активный DataGrid
+                if (currentDataGrid != null && currentDataGrid.IsVisible)
+                {
+                    // Принудительно фокусируемся на DataGrid
+                    if (!currentDataGrid.IsFocused)
+                    {
+                        currentDataGrid.Focus();
+                        Keyboard.Focus(currentDataGrid);
+                    }
+
+                    // Обрабатываем стрелку
+                    if (e.Key == Key.Down)
+                        MoveSelection(1);
+                    else if (e.Key == Key.Up)
+                        MoveSelection(-1);
+
+                    e.Handled = true;
+                }
+            }
+            else if (e.Key == Key.F2)
+            {
+                if (currentDataGrid != null && currentDataGrid.IsVisible)
+                {
+                    StartEditingSelectedRow();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void MoveSelection(int direction)
+        {
+            if (currentDataGrid == null || currentDataGrid.Items.Count == 0)
+                return;
+
+            // Убедимся, что DataGrid готов принимать фокус
+            currentDataGrid.Focusable = true;
+
+            // Сначала фокус на DataGrid
+            bool wasFocused = currentDataGrid.Focus();
+
+            // Получаем текущее выделение
+            int currentIndex = currentDataGrid.SelectedIndex;
+            int newIndex;
+
+            newIndex = currentIndex + direction;
+
+            // Проверяем границы
+            if (newIndex < 0) newIndex = 0;
+            if (newIndex >= currentDataGrid.Items.Count) newIndex = currentDataGrid.Items.Count - 1;
+
+            // Выделяем новую строку
+            currentDataGrid.SelectedIndex = newIndex;
+
+            // Прокручиваем
+            currentDataGrid.ScrollIntoView(currentDataGrid.Items[newIndex]);
+
+            // Всегда устанавливаем фокус обратно на DataGrid
+            currentDataGrid.Focus();
         }
         #endregion
 
@@ -435,6 +508,9 @@ namespace Reviser
                 // Переименовываем файл на диске
                 File.Move(originalFullPath, newFullPath);
 
+                // Сохраняем ссылку на переименованный элемент
+                var renamedItem = editingItem;
+
                 // Обновляем данные в объекте
                 editingItem.FileName = newFileName;
                 editingItem.FilePath = newFullPath;
@@ -469,10 +545,39 @@ namespace Reviser
                 // Обновляем статистику, если нужно
                 UpdateStatisticsAfterRename(originalEditingFileName, newFileName);
 
+                // Выделяем строку и фокусируемся НА ВСЁМ DataGrid
+                currentDataGrid.SelectedItem = editingItem;
+                currentDataGrid.Focus();
+                currentDataGrid.ScrollIntoView(editingItem);
+
+                // Создаем временную переменную, так как editingItem будет очищен
+                var justRenamedItem = editingItem;
+
                 // Очищаем редактирование
                 editingTextBox = null;
                 editingItem = null;
                 originalEditingFileName = null;
+
+                // НЕМЕДЛЕННО после очистки снова устанавливаем фокус
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    // Убеждаемся, что DataGrid имеет фокус клавиатуры
+                    Keyboard.Focus(currentDataGrid);
+
+                    // Выделяем строку снова (на всякий случай)
+                    currentDataGrid.SelectedItem = justRenamedItem;
+
+                    // Устанавливаем фокус на саму строку
+                    var row = currentDataGrid.ItemContainerGenerator.ContainerFromItem(justRenamedItem) as DataGridRow;
+                    if (row != null)
+                    {
+                        row.Focus();
+                    }
+
+                    // Прокручиваем к строке
+                    currentDataGrid.ScrollIntoView(justRenamedItem);
+
+                }), DispatcherPriority.Input); // Используем более высокий приоритет
             }
             catch (Exception ex)
             {
@@ -677,7 +782,7 @@ namespace Reviser
             GetImageDirectory();
         }
 
-        private void IsSearchParent_Checked(object sender, RoutedEventArgs e)
+        private void IsSearchParent_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             FindDirectory();
         }
@@ -1176,6 +1281,49 @@ namespace Reviser
         private void ShowOtherActionGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ShowCurrentActionGrid(OtherActionGrid);
+        }
+        #endregion
+
+
+
+        #region Сброс выбора
+        private void ResetCharacterFilters_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ResetCharacterFilters();
+        }
+
+        private void ResetAuthorFilters_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ResetAuthorFilters();
+        }
+
+        private void ResetTagFilters_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ResetTagFilters();
+        }
+
+        private void ResetCharacterFilters()
+        {
+            includeCharacters.Clear();
+            excludeCharacters.Clear();
+            UpdateCharacterList();
+            ApplyCharacterFilter();
+        }
+
+        private void ResetAuthorFilters()
+        {
+            includeAuthors.Clear();
+            excludeAuthors.Clear();
+            UpdateAuthorList();
+            ApplyAuthorFilter();
+        }
+
+        private void ResetTagFilters()
+        {
+            includeTags.Clear();
+            excludeTags.Clear();
+            UpdateTagList();
+            ApplyTagFilter();
         }
         #endregion
 
