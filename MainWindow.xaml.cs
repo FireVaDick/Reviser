@@ -174,6 +174,7 @@ namespace Reviser
 
         private List<string> enabledClasses = new List<string> { "1s", "2e", "3n", "4c", "5j", "6h" };
         private DataGrid currentDataGrid;
+        private Debouncer _refreshDebouncer = new Debouncer(TimeSpan.FromMilliseconds(100));
 
 
 
@@ -381,7 +382,7 @@ namespace Reviser
             var row = currentDataGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
             if (row == null) return;
 
-            // Находим колонку с именем файла (обычно вторая колонка с Header="Имя")
+            // Находим колонку с именем файла
             DataGridColumn nameColumn = null;
             foreach (var column in currentDataGrid.Columns)
             {
@@ -398,10 +399,17 @@ namespace Reviser
             var cellContent = nameColumn.GetCellContent(row);
             if (cellContent is TextBlock textBlock)
             {
+                // Получаем полное имя файла
+                string fullFileName = item.FileName;
+                string extension = Path.GetExtension(fullFileName);
+
+                // Определяем позицию курсора (перед расширением)
+                int cursorPosition = fullFileName.Length - extension.Length;
+
                 // Создаем TextBox для редактирования
                 editingTextBox = new TextBox
                 {
-                    Text = item.FileName,
+                    Text = fullFileName, // Полное имя с расширением
                     FontSize = 16,
                     FontFamily = new FontFamily("pack://application:,,,/Fonts/#v_DistrictTF-Regular"),
                     BorderThickness = new Thickness(0),
@@ -409,12 +417,41 @@ namespace Reviser
                     VerticalContentAlignment = VerticalAlignment.Center
                 };
 
+                // ОБРАБОТЧИК для установки курсора после загрузки
+                editingTextBox.Loaded += (sender, e) =>
+                {
+                    var textBox = sender as TextBox;
+                    if (textBox != null)
+                    {
+                        // Устанавливаем курсор перед расширением
+                        textBox.CaretIndex = cursorPosition;
+
+                        // Выделяем имя без расширения
+                        textBox.Select(0, cursorPosition);
+
+                        // Фокус и прокрутка каретки в видимую область
+                        textBox.Focus();
+                        textBox.ScrollToHome(); // Прокручиваем к началу выделения
+                    }
+                };
+
+                // ОБРАБОТЧИК для гарантированной установки курсора при получении фокуса
+                editingTextBox.GotKeyboardFocus += (sender, e) =>
+                {
+                    var textBox = sender as TextBox;
+                    if (textBox != null && textBox.CaretIndex != cursorPosition)
+                    {
+                        textBox.CaretIndex = cursorPosition;
+                        textBox.Select(0, cursorPosition);
+                    }
+                };
+
                 // Заменяем TextBlock на TextBox
                 var parent = textBlock.Parent as FrameworkElement;
                 if (parent != null)
                 {
                     // Сохраняем оригинальный контент
-                    parent.Tag = textBlock; // сохраняем для восстановления
+                    parent.Tag = textBlock;
 
                     // Добавляем TextBox
                     if (parent is Border border)
@@ -427,7 +464,6 @@ namespace Reviser
                     }
                     else
                     {
-                        // Пытаемся найти ContentControl
                         var contentControl = FindVisualParent<ContentControl>(textBlock);
                         if (contentControl != null)
                         {
@@ -435,9 +471,15 @@ namespace Reviser
                         }
                     }
 
-                    // Фокусируемся на TextBox
-                    editingTextBox.Focus();
-                    editingTextBox.SelectAll();
+                    // Немедленная установка курсора через Dispatcher
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (editingTextBox != null && editingTextBox.IsLoaded)
+                        {
+                            editingTextBox.CaretIndex = cursorPosition;
+                            editingTextBox.Focus();
+                        }
+                    }), DispatcherPriority.Input);
 
                     // Обработчики событий
                     editingTextBox.KeyDown += EditingTextBox_KeyDown;
@@ -469,7 +511,7 @@ namespace Reviser
             }
         }
 
-        private void CommitEditAndRename()
+        private async void CommitEditAndRename()
         {
             if (editingItem == null || editingTextBox == null) return;
 
@@ -483,107 +525,104 @@ namespace Reviser
 
             try
             {
-                // Полный путь к файлу
-                string originalFullPath = editingItem.FilePath;
-                string directory = Path.GetDirectoryName(originalFullPath);
-                string extension = Path.GetExtension(originalFullPath);
+                // Показываем индикатор загрузки
+                Cursor = Cursors.Wait;
+                LoadFullTable.IsEnabled = false;
 
-                // Проверяем, что новое имя имеет правильное расширение
-                if (!newFileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
-                {
-                    newFileName += extension;
-                }
+                // Сохраняем ссылки
+                var itemToRename = editingItem;
+                string oldFullPath = itemToRename.FilePath;
+                string oldFileName = originalEditingFileName;
 
-                string newFullPath = Path.Combine(directory, newFileName);
-
-                // Проверяем, не существует ли уже файл с таким именем
-                if (File.Exists(newFullPath))
-                {
-                    MessageBox.Show($"Файл с именем '{newFileName}' уже существует.",
-                                  "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    CancelEdit();
-                    return;
-                }
-
-                // Переименовываем файл на диске
-                File.Move(originalFullPath, newFullPath);
-
-                // Сохраняем ссылку на переименованный элемент
-                var renamedItem = editingItem;
-
-                // Обновляем данные в объекте
-                editingItem.FileName = newFileName;
-                editingItem.FilePath = newFullPath;
-
-                // Также обновляем оригинальное имя в parsed данных
-                if (editingItem.CharacterList != null && editingItem.CharacterList.Count > 0)
-                {
-                    // Парсим новое имя для обновления данных
-                    var newParsed = PartsOfImageName.ParseImageNameIntoParts(newFileName);
-                    editingItem.Character = newParsed.Character;
-                    editingItem.Author = newParsed.Author;
-                    editingItem.Class = newParsed.Class;
-                    editingItem.Number = newParsed.Number;
-                    editingItem.Tags = newParsed.Tags;
-                    editingItem.CharacterList = newParsed.CharacterList;
-                    editingItem.AuthorList = newParsed.AuthorList;
-                    editingItem.TagList = newParsed.TagList;
-                }
-
-                // Обновляем отображение в таблице
-                currentDataGrid.Items.Refresh();
-
-                // Восстанавливаем TextBlock
+                // Восстанавливаем TextBlock СРАЗУ
                 RestoreTextBlock();
-
-                // Обновляем превью, если оно активно
-                if (PreviewFileName.Text.Contains(originalEditingFileName))
-                {
-                    PreviewFileName.Text = newFileName;
-                }
-
-                // Обновляем статистику, если нужно
-                UpdateStatisticsAfterRename(originalEditingFileName, newFileName);
-
-                // Выделяем строку и фокусируемся НА ВСЁМ DataGrid
-                currentDataGrid.SelectedItem = editingItem;
-                currentDataGrid.Focus();
-                currentDataGrid.ScrollIntoView(editingItem);
-
-                // Создаем временную переменную, так как editingItem будет очищен
-                var justRenamedItem = editingItem;
-
-                // Очищаем редактирование
                 editingTextBox = null;
                 editingItem = null;
                 originalEditingFileName = null;
 
-                // НЕМЕДЛЕННО после очистки снова устанавливаем фокус
-                Dispatcher.BeginInvoke(new Action(() =>
+                // 1. Асинхронное переименование файла
+                await Task.Run(() =>
                 {
-                    // Убеждаемся, что DataGrid имеет фокус клавиатуры
-                    Keyboard.Focus(currentDataGrid);
+                    string directory = Path.GetDirectoryName(oldFullPath);
+                    string extension = Path.GetExtension(oldFullPath);
 
-                    // Выделяем строку снова (на всякий случай)
-                    currentDataGrid.SelectedItem = justRenamedItem;
-
-                    // Устанавливаем фокус на саму строку
-                    var row = currentDataGrid.ItemContainerGenerator.ContainerFromItem(justRenamedItem) as DataGridRow;
-                    if (row != null)
+                    // Проверяем расширение
+                    if (!newFileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
                     {
-                        row.Focus();
+                        newFileName += extension;
                     }
 
-                    // Прокручиваем к строке
-                    currentDataGrid.ScrollIntoView(justRenamedItem);
+                    string fullPath = Path.Combine(directory, newFileName);
 
-                }), DispatcherPriority.Input); // Используем более высокий приоритет
+                    // Проверяем существование файла
+                    if (File.Exists(fullPath))
+                    {
+                        throw new IOException($"Файл с именем '{newFileName}' уже существует.");
+                    }
+
+                    // Переименовываем файл
+                    File.Move(oldFullPath, fullPath);
+
+                    // Возвращаем новый путь
+                    return fullPath;
+                });
+
+                // 2. Обновляем данные в объекте (в UI потоке)
+                string newFullPath = Path.Combine(Path.GetDirectoryName(oldFullPath), newFileName);
+                itemToRename.FileName = newFileName;
+                itemToRename.FilePath = newFullPath;
+
+                // 3. Асинхронный парсинг нового имени
+                var newParsed = await Task.Run(() =>
+                    PartsOfImageName.ParseImageNameIntoParts(newFileName));
+
+                // 4. Обновляем данные объекта
+                if (newParsed != null)
+                {
+                    itemToRename.Character = newParsed.Character;
+                    itemToRename.Author = newParsed.Author;
+                    itemToRename.Class = newParsed.Class;
+                    itemToRename.Number = newParsed.Number;
+                    itemToRename.Tags = newParsed.Tags;
+                    itemToRename.CharacterList = newParsed.CharacterList;
+                    itemToRename.AuthorList = newParsed.AuthorList;
+                    itemToRename.TagList = newParsed.TagList;
+                }
+
+                // 5. Обновляем только одну строку вместо всей таблицы
+                _refreshDebouncer.Debounce(() =>
+                {
+                    Dispatcher.InvokeAsync(() =>
+                    {
+                        currentDataGrid.Items.Refresh();
+                    }, DispatcherPriority.Background);
+                });
+
+                // 6. Обновляем превью, если нужно
+                if (PreviewFileName.Text.Contains(oldFileName))
+                {
+                    PreviewFileName.Text = newFileName;
+                }
+
+                // 7. Асинхронное обновление статистики (без блокировки UI)
+                _ = Task.Run(() => UpdateStatisticsAfterRename(oldFileName, newFileName));
+
+                // 8. Выделяем переименованную строку
+                currentDataGrid.SelectedItem = itemToRename;
+                currentDataGrid.ScrollIntoView(itemToRename);
+                currentDataGrid.Focus();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при переименовании файла:\n{ex.Message}",
                                "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 CancelEdit();
+            }
+            finally
+            {
+                // Восстанавливаем курсор и кнопки
+                Cursor = Cursors.Arrow;
+                LoadFullTable.IsEnabled = true;
             }
         }
 
@@ -636,52 +675,75 @@ namespace Reviser
             editingTextBox.LostFocus -= EditingTextBox_LostFocus;
         }
 
-        private void UpdateStatisticsAfterRename(string oldFileName, string newFileName)
+        private async Task UpdateStatisticsAfterRename(string oldFileName, string newFileName)
         {
-            // Парсим старое и новое имена
-            var oldParsed = PartsOfImageName.ParseImageNameIntoParts(oldFileName);
-            var newParsed = PartsOfImageName.ParseImageNameIntoParts(newFileName);
+            try
+            {
+                // Парсим в фоновом потоке
+                var oldParsed = await Task.Run(() =>
+                    PartsOfImageName.ParseImageNameIntoParts(oldFileName));
 
-            // Обновляем статистику персонажей
-            UpdateCharacterStatisticsAfterRename(oldParsed, newParsed);
+                var newParsed = await Task.Run(() =>
+                    PartsOfImageName.ParseImageNameIntoParts(newFileName));
 
-            // Обновляем статистику авторов
-            UpdateAuthorStatisticsAfterRename(oldParsed, newParsed);
+                // Обновляем статистику в UI потоке
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    // Обновляем статистику персонажей
+                    UpdateCharacterStatisticsAfterRename(oldParsed, newParsed);
 
-            // Обновляем статистику тегов
-            UpdateTagStatisticsAfterRename(oldParsed, newParsed);
+                    // Обновляем статистику авторов
+                    UpdateAuthorStatisticsAfterRename(oldParsed, newParsed);
+
+                    // Обновляем статистику тегов
+                    UpdateTagStatisticsAfterRename(oldParsed, newParsed);
+                }, DispatcherPriority.Background);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при обновлении статистики: {ex.Message}");
+            }
         }
 
         private void UpdateCharacterStatisticsAfterRename(PartsOfImageName oldParsed, PartsOfImageName newParsed)
         {
-            // Уменьшаем счетчики для старых персонажей
-            if (oldParsed?.CharacterList != null)
+            // Быстрая проверка, есть ли изменения
+            bool oldHasCharacters = oldParsed?.CharacterList != null && oldParsed.CharacterList.Any();
+            bool newHasCharacters = newParsed?.CharacterList != null && newParsed.CharacterList.Any();
+
+            if (!oldHasCharacters && !newHasCharacters) return;
+
+            lock (characterStatistics) // Добавляем потокобезопасность
             {
-                foreach (var character in oldParsed.CharacterList)
+                // Уменьшаем счетчики для старых персонажей
+                if (oldHasCharacters)
                 {
-                    if (characterStatistics.ContainsKey(character))
+                    foreach (var character in oldParsed.CharacterList)
                     {
-                        characterStatistics[character]--;
-                        if (characterStatistics[character] <= 0)
+                        if (characterStatistics.ContainsKey(character))
                         {
-                            characterStatistics.Remove(character);
+                            characterStatistics[character]--;
+                            if (characterStatistics[character] <= 0)
+                            {
+                                characterStatistics.Remove(character);
+                            }
                         }
                     }
                 }
-            }
 
-            // Увеличиваем счетчики для новых персонажей
-            if (newParsed?.CharacterList != null)
-            {
-                foreach (var character in newParsed.CharacterList)
+                // Увеличиваем счетчики для новых персонажей
+                if (newHasCharacters)
                 {
-                    if (characterStatistics.ContainsKey(character))
+                    foreach (var character in newParsed.CharacterList)
                     {
-                        characterStatistics[character]++;
-                    }
-                    else
-                    {
-                        characterStatistics[character] = 1;
+                        if (characterStatistics.ContainsKey(character))
+                        {
+                            characterStatistics[character]++;
+                        }
+                        else
+                        {
+                            characterStatistics[character] = 1;
+                        }
                     }
                 }
             }
@@ -691,33 +753,43 @@ namespace Reviser
 
         private void UpdateAuthorStatisticsAfterRename(PartsOfImageName oldParsed, PartsOfImageName newParsed)
         {
-            // Аналогично для авторов
-            if (oldParsed?.AuthorList != null)
+            // Быстрая проверка, есть ли изменения
+            bool oldHasauthors = oldParsed?.AuthorList != null && oldParsed.AuthorList.Any();
+            bool newHasauthors = newParsed?.AuthorList != null && newParsed.AuthorList.Any();
+
+            if (!oldHasauthors && !newHasauthors) return;
+
+            lock (authorStatistics) // Добавляем потокобезопасность
             {
-                foreach (var author in oldParsed.AuthorList)
+                // Уменьшаем счетчики для старых персонажей
+                if (oldHasauthors)
                 {
-                    if (authorStatistics.ContainsKey(author))
+                    foreach (var author in oldParsed.AuthorList)
                     {
-                        authorStatistics[author]--;
-                        if (authorStatistics[author] <= 0)
+                        if (authorStatistics.ContainsKey(author))
                         {
-                            authorStatistics.Remove(author);
+                            authorStatistics[author]--;
+                            if (authorStatistics[author] <= 0)
+                            {
+                                authorStatistics.Remove(author);
+                            }
                         }
                     }
                 }
-            }
 
-            if (newParsed?.AuthorList != null)
-            {
-                foreach (var author in newParsed.AuthorList)
+                // Увеличиваем счетчики для новых персонажей
+                if (newHasauthors)
                 {
-                    if (authorStatistics.ContainsKey(author))
+                    foreach (var author in newParsed.AuthorList)
                     {
-                        authorStatistics[author]++;
-                    }
-                    else
-                    {
-                        authorStatistics[author] = 1;
+                        if (authorStatistics.ContainsKey(author))
+                        {
+                            authorStatistics[author]++;
+                        }
+                        else
+                        {
+                            authorStatistics[author] = 1;
+                        }
                     }
                 }
             }
@@ -727,33 +799,43 @@ namespace Reviser
 
         private void UpdateTagStatisticsAfterRename(PartsOfImageName oldParsed, PartsOfImageName newParsed)
         {
-            // Аналогично для тегов
-            if (oldParsed?.TagList != null)
+            // Быстрая проверка, есть ли изменения
+            bool oldHastags = oldParsed?.TagList != null && oldParsed.TagList.Any();
+            bool newHastags = newParsed?.TagList != null && newParsed.TagList.Any();
+
+            if (!oldHastags && !newHastags) return;
+
+            lock (tagStatistics) // Добавляем потокобезопасность
             {
-                foreach (var tag in oldParsed.TagList)
+                // Уменьшаем счетчики для старых персонажей
+                if (oldHastags)
                 {
-                    if (tagStatistics.ContainsKey(tag))
+                    foreach (var tag in oldParsed.TagList)
                     {
-                        tagStatistics[tag]--;
-                        if (tagStatistics[tag] <= 0)
+                        if (tagStatistics.ContainsKey(tag))
                         {
-                            tagStatistics.Remove(tag);
+                            tagStatistics[tag]--;
+                            if (tagStatistics[tag] <= 0)
+                            {
+                                tagStatistics.Remove(tag);
+                            }
                         }
                     }
                 }
-            }
 
-            if (newParsed?.TagList != null)
-            {
-                foreach (var tag in newParsed.TagList)
+                // Увеличиваем счетчики для новых персонажей
+                if (newHastags)
                 {
-                    if (tagStatistics.ContainsKey(tag))
+                    foreach (var tag in newParsed.TagList)
                     {
-                        tagStatistics[tag]++;
-                    }
-                    else
-                    {
-                        tagStatistics[tag] = 1;
+                        if (tagStatistics.ContainsKey(tag))
+                        {
+                            tagStatistics[tag]++;
+                        }
+                        else
+                        {
+                            tagStatistics[tag] = 1;
+                        }
                     }
                 }
             }
@@ -3164,6 +3246,32 @@ namespace Reviser
 
 
     #region Другое
+    public class Debouncer
+    {
+        private readonly TimeSpan _interval;
+        private DateTime _lastExecution = DateTime.MinValue;
+        private Action _pendingAction;
+
+        public Debouncer(TimeSpan interval)
+        {
+            _interval = interval;
+        }
+
+        public void Debounce(Action action)
+        {
+            _pendingAction = action;
+            _lastExecution = DateTime.Now;
+
+            Task.Delay(_interval).ContinueWith(t =>
+            {
+                if ((DateTime.Now - _lastExecution) >= _interval)
+                {
+                    _pendingAction?.Invoke();
+                    _pendingAction = null;
+                }
+            });
+        }
+    }
     public static class VisualTreeHelperExtensions
     {
         public static T GetParentOfType<T>(this DependencyObject child) where T : DependencyObject
