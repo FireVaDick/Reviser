@@ -36,7 +36,7 @@
                     <Setter Property="Background" Value="#EBEBEB"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding BackColor}" Value="#002">
-                    <Setter Property="Background" Value="#b2f69e"/>
+                    <Setter Property="Background" Value="#b1ee9f"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding BackColor}" Value="#003">
                     <Setter Property="Background" Value="#f2ee88"/>
@@ -96,7 +96,7 @@
                 <local:AnyMenuOption x:Name="Class2e"
                                      GroupName="ClassGroup"
                                      Command="2e"
-                                     ClickedColor="#b2f69e"
+                                     ClickedColor="#b1ee9f"
                                      Width="35"
                                      MouseLeftButtonDown="Class2e_MouseButtonDown" 
                                      MouseRightButtonDown="Class2e_MouseButtonDown" />
@@ -202,6 +202,15 @@
                         <TextBlock x:Name="PreviewFileSize"
                                    FontSize="12"
                                    Foreground="#666"/>
+                    </StackPanel>
+
+                    <StackPanel x:Name="PreviewTagsIconsPanel"
+                                Grid.Row="2"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,11,11" >
+                        <!-- Иконки будут добавляться динамически -->
                     </StackPanel>
 
                     <!-- Сообщение когда нет выбора -->

@@ -1133,6 +1133,9 @@ namespace Reviser
             if (TagExcludePanel != null) TagExcludePanel.Children.Clear();
             if (TagOtherPanel != null) TagOtherPanel.Children.Clear();
 
+            PreviewTagsIconsPanel.Children.Clear();
+            PreviewTagsIconsPanel.Visibility = Visibility.Collapsed;
+
             Count.Text = "Всего изображений: 0";
             ClearImagePreview();
         }
@@ -3085,6 +3088,8 @@ namespace Reviser
                         PreviewFileSize.Text = $"Размер: {item.FileSize}";
 
                         NoPreviewText.Visibility = Visibility.Collapsed;
+
+                        UpdatePreviewTagsIcons(item);
                     });
                 }
                 else
@@ -3141,7 +3146,96 @@ namespace Reviser
             PreviewResolution.Text = "";
             PreviewFileSize.Text = "";
 
+            PreviewTagsIconsPanel.Children.Clear();
+            PreviewTagsIconsPanel.Visibility = Visibility.Collapsed;
+
             NoPreviewText.Visibility = Visibility.Visible;
+        }
+        #endregion
+
+
+
+        #region Картинки f-тегов
+        private void UpdatePreviewTagsIcons(ImageInfoItem item)
+        {
+            // Очищаем панель
+            PreviewTagsIconsPanel.Children.Clear();
+
+            if (item == null || item.TagList == null || item.TagList.Count == 0)
+            {
+                PreviewTagsIconsPanel.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            // Список F-тегов в порядке приоритета (от важных к менее важным)
+            var fTagsInOrder = new[] { "f3v", "fb00", "fbe11", "fa55", "fl3g", "fv4g", "fd1ck" };
+
+            bool hasAnyFTag = false;
+
+            foreach (var tag in fTagsInOrder)
+            {
+                if (item.TagList.Contains(tag))
+                {
+                    AddTagIcon(tag);
+                    hasAnyFTag = true;
+                }
+            }
+
+            // Если есть хотя бы один F-тег, показываем панель
+            PreviewTagsIconsPanel.Visibility = hasAnyFTag ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void AddTagIcon(string tag)
+        {
+            // Определяем путь к иконке и ToolTip
+            string imagePath = "";
+            string tooltip = "";
+
+            switch (tag)
+            {
+                case "f3v":
+                    imagePath = "pack://application:,,,/Icons/f3v.png";
+                    tooltip = "f3v";
+                    break;
+                case "fb00":
+                    imagePath = "pack://application:,,,/Icons/fb00.png";
+                    tooltip = "fb00";
+                    break;
+                case "fbe11":
+                    imagePath = "pack://application:,,,/Icons/fbe11.png";
+                    tooltip = "fbe11";
+                    break;
+                case "fa55":
+                    imagePath = "pack://application:,,,/Icons/fa55.png";
+                    tooltip = "fa55";
+                    break;
+                case "fl3g":
+                    imagePath = "pack://application:,,,/Icons/fl3g.png";
+                    tooltip = "fl3g";
+                    break;
+                case "fv4g":
+                    imagePath = "pack://application:,,,/Icons/fv4g.png";
+                    tooltip = "fv4g";
+                    break;
+                case "fd1ck":
+                    imagePath = "pack://application:,,,/Icons/fd1ck.png";
+                    tooltip = "fd1ck";
+                    break;
+                default:
+                    return; // Неизвестный тег
+            }
+
+            var image = new Image
+            {
+                Source = new BitmapImage(new Uri(imagePath, UriKind.RelativeOrAbsolute)),
+                Width = 30,
+                Height = 30,
+                Margin = new Thickness(5.2, 0, 0, 0),
+                ToolTip = tooltip,
+                Stretch = Stretch.Uniform
+            };
+
+            PreviewTagsIconsPanel.Children.Add(image);
         }
         #endregion
 

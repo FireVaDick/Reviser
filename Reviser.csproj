@@ -132,5 +132,13 @@
   <ItemGroup>
     <Resource Include="Crystal.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\f3v.png" />
+    <Resource Include="Icons\fa55.png" />
+    <Resource Include="Icons\fb00.png" />
+    <Resource Include="Icons\fbe11.png" />
+    <Resource Include="Icons\fd1ck.png" />
+    <Resource Include="Icons\fl3g.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
