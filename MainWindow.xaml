@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Reviser"
         mc:Ignorable="d"
         Title="Главное меню"
-        Width="1280" Height="600"
+        Width="1600" Height="800"
         MinWidth="1280" MinHeight="600"
         d:DesignWidth="1280" d:DesignHeight="600"
         FontSize="16"
