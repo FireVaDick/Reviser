@@ -138,10 +138,10 @@
     <Resource Include="Icons\fb00.png" />
     <Resource Include="Icons\fbe11.png" />
     <Resource Include="Icons\fd1ck.png" />
-    <Resource Include="Icons\fl3g.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\fv4g.png" />
+    <Resource Include="Icons\fh0le.png" />
+    <Resource Include="Icons\fl33.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

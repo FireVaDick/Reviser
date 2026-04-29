@@ -2548,7 +2548,19 @@ namespace Reviser
             var items = await LoadImageNameFilesAsync(moveImageFiles);
 
             // Определяем порядок сортировки для тегов с буквой 'f'
-            var tagOrder = new List<string> { "fb00", "fbe11", "fa55", "fl3g", "fd1ck" };
+            var tagOrder = new List<string> { "1g", "2g", "3g", "4g", "5g", "6g", "6g+",
+                                              "1b", "2b", "3b", "4b", "5b", "6b", "6b+",
+                                              "f3v", "fb00", "fbe11", "fa55", "fl33", "fh0le", "fd1ck",
+                                              "n11", "p55", "a88", "f8ta",
+                                              "ki55", "gr4b", "sm4ck",
+                                              "d1d", "v1bro", "pl4g", "t4il", "b3ads", "str4p",
+                                              "f4p", "f1ng", "r7b",
+                                              "s4ck", "cun1", "an1", "sc1s", "t3nt",
+                                              "l1ck", "fe11", "Ife11", "d0es",
+                                              "h4jb", "f0jb", "b0jb", "a7jb", "p5jb", "a5jb", "t1jb", "r1jb",
+                                              "v5ex", "Iv5ex", "a5ex", "Ia5ex", "Iw5ex", "w5ex",
+                                              "m1lk", "p4b", "pi3r", "xr4y", "c4m", "c3n", "t3xt" };
+
 
             // Обрабатываем каждый файл
             foreach (var item in items)
@@ -3168,7 +3180,7 @@ namespace Reviser
             }
 
             // Список F-тегов в порядке приоритета (от важных к менее важным)
-            var fTagsInOrder = new[] { "f3v", "fb00", "fbe11", "fa55", "fl3g", "fv4g", "fd1ck" };
+            var fTagsInOrder = new[] { "f3v", "fb00", "fbe11", "fa55", "fl33", "fh0le", "fd1ck" };
 
             bool hasAnyFTag = false;
 
@@ -3209,13 +3221,13 @@ namespace Reviser
                     imagePath = "pack://application:,,,/Icons/fa55.png";
                     tooltip = "fa55";
                     break;
-                case "fl3g":
-                    imagePath = "pack://application:,,,/Icons/fl3g.png";
-                    tooltip = "fl3g";
+                case "fl33":
+                    imagePath = "pack://application:,,,/Icons/fl33.png";
+                    tooltip = "fl33";
                     break;
-                case "fv4g":
-                    imagePath = "pack://application:,,,/Icons/fv4g.png";
-                    tooltip = "fv4g";
+                case "fh0le":
+                    imagePath = "pack://application:,,,/Icons/fh0le.png";
+                    tooltip = "fh0le";
                     break;
                 case "fd1ck":
                     imagePath = "pack://application:,,,/Icons/fd1ck.png";
