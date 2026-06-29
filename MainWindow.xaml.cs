@@ -32,7 +32,7 @@ namespace Reviser
 
         private int characterAmountTemplate = 20;
         private int authorAmountTemplate = 20;
-        private int tagAmountTemplate = 50;
+        private int tagAmountTemplate = 10;
 
         private bool characterListNeedsUpdate = false;
         private bool authorListNeedsUpdate = false;

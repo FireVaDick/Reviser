@@ -913,7 +913,7 @@
                                           FontSize="16"
                                           VerticalContentAlignment="Center"
                                           SelectionChanged="TagFilterTypeComboBox_SelectionChanged">
-                                    <ComboBoxItem IsSelected="True" Content="&gt;="/>
+                                    <ComboBoxItem IsSelected="True" Content="&lt;="/>
                                     <ComboBoxItem Content="&lt;="/>
                                 </ComboBox>
                                 
